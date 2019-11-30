@@ -2,12 +2,14 @@ package com.algaworks.algafoodapi.api.controller;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -17,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.algaworks.algafoodapi.domain.exception.AssociacaoNaoEncontradaException;
-import com.algaworks.algafoodapi.domain.exception.EntidateNaoEncontradaException;
+import com.algaworks.algafoodapi.domain.exception.EntidadeNaoEncontradaException;
 import com.algaworks.algafoodapi.domain.model.Restaurante;
 import com.algaworks.algafoodapi.domain.repository.RestauranteRepository;
 import com.algaworks.algafoodapi.domain.service.RestauranteService;
@@ -65,19 +67,29 @@ public class RestauranteController {
 		try {
 			Restaurante restauranteAtualizado = restauranteService.atualizar(id, restaurante);
 			return ResponseEntity.ok(restauranteAtualizado);
-		} catch (EntidateNaoEncontradaException e) {
+		} catch (EntidadeNaoEncontradaException e) {
 			return ResponseEntity.notFound().build();
 		} catch (AssociacaoNaoEncontradaException e) {
 			return ResponseEntity.badRequest().body(e.getMessage());
 		}
 	}
 	
-	@DeleteMapping("{id}")
+	@DeleteMapping("/{id}")
 	public ResponseEntity<Object> remover(@PathVariable Long id) {
 		try {
 			restauranteService.remover(id);
 			return ResponseEntity.noContent().build();
-		} catch (EntidateNaoEncontradaException e) {
+		} catch (EntidadeNaoEncontradaException e) {
+			return ResponseEntity.notFound().build();
+		}
+	}
+	
+	@PatchMapping("/{id}")
+	public ResponseEntity<Object> atualizarParcial(@PathVariable Long id, @RequestBody Map<String, Object> campos) {
+		try {
+			Restaurante restauranteAtualizado = restauranteService.atualizarParcial(id, campos);
+			return ResponseEntity.ok(restauranteAtualizado);
+		} catch (EntidadeNaoEncontradaException e) {
 			return ResponseEntity.notFound().build();
 		}
 	}

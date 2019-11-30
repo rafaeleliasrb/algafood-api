@@ -20,7 +20,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.algaworks.algafoodapi.api.model.CozinhaXMLWrapper;
 import com.algaworks.algafoodapi.domain.exception.EntidadeEmUsoException;
-import com.algaworks.algafoodapi.domain.exception.EntidateNaoEncontradaException;
+import com.algaworks.algafoodapi.domain.exception.EntidadeNaoEncontradaException;
 import com.algaworks.algafoodapi.domain.model.Cozinha;
 import com.algaworks.algafoodapi.domain.repository.CozinhaRepository;
 import com.algaworks.algafoodapi.domain.service.CozinhaService;
@@ -66,24 +66,24 @@ public class CozinhaController {
 		return ResponseEntity.created(cozinhaUri).body(cozinha);
 	}
 	
-	@DeleteMapping("{id}")
+	@DeleteMapping("/{id}")
 	public ResponseEntity<Object> remover(@PathVariable Long id) {
 		try {
 			cozinhaService.remover(id);
 			return ResponseEntity.noContent().build();
 		} catch (EntidadeEmUsoException e) {
 			return ResponseEntity.status(HttpStatus.CONFLICT).build();
-		} catch (EntidateNaoEncontradaException e) {
+		} catch (EntidadeNaoEncontradaException e) {
 			return ResponseEntity.notFound().build();
 		}
 	}
 	
-	@PutMapping("{id}")
+	@PutMapping("/{id}")
 	public ResponseEntity<Cozinha> atualizar(@RequestBody Cozinha cozinha, @PathVariable Long id) {
 		try {
 			cozinha = cozinhaService.atualizar(id, cozinha);
 			return ResponseEntity.ok(cozinha);
-		} catch (EntidateNaoEncontradaException e) {
+		} catch (EntidadeNaoEncontradaException e) {
 			return ResponseEntity.notFound().build();
 		}
 	}

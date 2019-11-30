@@ -1,10 +1,10 @@
 package com.algaworks.algafoodapi.domain.exception;
 
-public class EntidateNaoEncontradaException extends RuntimeException {
+public class EntidadeNaoEncontradaException extends RuntimeException {
 
 	private static final long serialVersionUID = 1L;
 
-	public EntidateNaoEncontradaException(String mensagem) {
+	public EntidadeNaoEncontradaException(String mensagem) {
 		super(mensagem);
 	}
 
