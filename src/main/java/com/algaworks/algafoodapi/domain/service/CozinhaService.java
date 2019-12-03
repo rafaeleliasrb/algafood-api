@@ -3,6 +3,7 @@ package com.algaworks.algafoodapi.domain.service;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,29 +29,29 @@ public class CozinhaService {
 	
 	@Transactional
 	public Cozinha adicionar(Cozinha novaCozinha) {
-		return cozinhaRepository.salvar(novaCozinha);
+		return cozinhaRepository.save(novaCozinha);
 	}
 	
 	@Transactional
 	public Cozinha atualizar(Long id, Cozinha cozinha) {
-		Cozinha cozinhaAtual = cozinhaRepository.buscarPorId(id)
+		Cozinha cozinhaAtual = cozinhaRepository.findById(id)
 				.orElseThrow(() -> new EntidadeNaoEncontradaException(""));
 		BeanUtils.copyProperties(cozinha, cozinhaAtual, "id");
-		return cozinhaRepository.salvar(cozinhaAtual);
+		return cozinhaRepository.save(cozinhaAtual);
 	}
 	
 	
 	public void remover(Long id) {
-		Cozinha cozinhaAtual = cozinhaRepository.buscarPorId(id)
-				.orElseThrow(() -> new EntidadeNaoEncontradaException(""));
 		try {
 			transactionTemplate.execute(new TransactionCallbackWithoutResult() {
 			    protected void doInTransactionWithoutResult(TransactionStatus status) {
-			    	cozinhaRepository.remover(cozinhaAtual);
+			    	cozinhaRepository.deleteById(id);
 			    }
 			});
 		} catch (DataIntegrityViolationException e) {
 			throw new EntidadeEmUsoException(String.format("Cozinha de id %d está em uso", id));
+		} catch (EmptyResultDataAccessException e) {
+			throw new EntidadeNaoEncontradaException(String.format("Cozinha de id %d não encontrado", id));
 		}
 	}
 

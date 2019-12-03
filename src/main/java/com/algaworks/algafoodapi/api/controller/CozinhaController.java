@@ -40,17 +40,17 @@ public class CozinhaController {
 	
 	@GetMapping(produces = {MediaType.APPLICATION_JSON_VALUE})
 	public List<Cozinha> listar() {
-		return cozinhaRepository.listarTodos();
+		return cozinhaRepository.findAll();
 	}
 
 	@GetMapping(produces = {MediaType.APPLICATION_XML_VALUE})
 	public CozinhaXMLWrapper listarXML() {
-		return new CozinhaXMLWrapper(cozinhaRepository.listarTodos());
+		return new CozinhaXMLWrapper(cozinhaRepository.findAll());
 	}
 	
 	@GetMapping(value = "/{id}")
 	public ResponseEntity<Cozinha> porId(@PathVariable Long id) {
-		Optional<Cozinha> cozinhaOpt = cozinhaRepository.buscarPorId(id);
+		Optional<Cozinha> cozinhaOpt = cozinhaRepository.findById(id);
 		if(cozinhaOpt.isPresent())
 			return ResponseEntity.ok(cozinhaOpt.get());
 		

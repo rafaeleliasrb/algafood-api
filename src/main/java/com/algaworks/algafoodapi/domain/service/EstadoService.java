@@ -5,6 +5,7 @@ import java.util.function.Supplier;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,28 +31,28 @@ public class EstadoService {
 
 	@Transactional
 	public Estado adicionar(Estado estado) {
-		return estadoRepository.salvar(estado);
+		return estadoRepository.save(estado);
 	}
 
 	@Transactional
 	public Estado atualizar(Long id, Estado estado) {
-		Estado estadoAtual = estadoRepository.buscarPorId(id)
+		Estado estadoAtual = estadoRepository.findById(id)
 			.orElseThrow(entidadeNaoEncontradaSupplier(estado.getId()));
 		BeanUtils.copyProperties(estado, estadoAtual, "id");
-		return estadoRepository.salvar(estadoAtual);
+		return estadoRepository.save(estadoAtual);
 	}
 	
 	public void remover(Long id) {
-		Estado estado = estadoRepository.buscarPorId(id)
-				.orElseThrow(entidadeNaoEncontradaSupplier(id));
 		try {
 			transactionTemplate.execute(new TransactionCallbackWithoutResult() {
 			    protected void doInTransactionWithoutResult(TransactionStatus status) {
-			    	estadoRepository.remover(estado);
+			    	estadoRepository.deleteById(id);
 			    }
 			});
 		} catch (DataIntegrityViolationException e) {
 			throw new EntidadeEmUsoException(String.format("Estado de id %d está em uso", id));
+		} catch (EmptyResultDataAccessException e) {
+			throw new EntidadeNaoEncontradaException(String.format("Estado de id %d não encontrado", id));
 		}
 	}
 

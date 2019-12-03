@@ -6,6 +6,7 @@ import java.util.function.Supplier;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ReflectionUtils;
@@ -34,32 +35,34 @@ public class RestauranteService {
 	public Restaurante adicionar(Restaurante restaurante) {
 		Cozinha cozinha = cozinhaPorId(restaurante.getCozinha().getId());
 		restaurante.setCozinha(cozinha);
-		return restauranteRepository.salvar(restaurante);
+		return restauranteRepository.save(restaurante);
 	}
 
 	@Transactional
 	public Restaurante atualizar(Long id, Restaurante restaurante) {
-		Restaurante restauranteAtual = restauranteRepository.buscarPorId(id)
+		Restaurante restauranteAtual = restauranteRepository.findById(id)
 				.orElseThrow(entidadeNaoEncontradaSupplier(id));
 		Cozinha cozinha = cozinhaPorId(restaurante.getCozinha().getId());
 		restaurante.setCozinha(cozinha);
 		BeanUtils.copyProperties(restaurante, restauranteAtual, "id");
-		return restauranteRepository.salvar(restauranteAtual);
+		return restauranteRepository.save(restauranteAtual);
 	}
 
 	@Transactional
 	public void remover(Long id) {
-		Restaurante restaurante = restauranteRepository.buscarPorId(id)
-				.orElseThrow(entidadeNaoEncontradaSupplier(id));
-		restauranteRepository.remover(restaurante);
+		try {
+			restauranteRepository.deleteById(id);
+		} catch (EmptyResultDataAccessException e) {
+			throw new EntidadeNaoEncontradaException(String.format("Restaurante de id %d não encontrado", id));
+		}
 	}
 	
 	@Transactional
 	public Restaurante atualizarParcial(Long id, Map<String, Object> propriedadesOrigem) {
-		Restaurante restauranteAtual = restauranteRepository.buscarPorId(id)
+		Restaurante restauranteAtual = restauranteRepository.findById(id)
 				.orElseThrow(entidadeNaoEncontradaSupplier(id));
 		mergeCampos(propriedadesOrigem, restauranteAtual);
-		return restauranteRepository.salvar(restauranteAtual);
+		return restauranteRepository.save(restauranteAtual);
 	}
 	
 	private void mergeCampos(Map<String, Object> propriedadesOrigem, Restaurante restauranteDestino) {
@@ -77,7 +80,7 @@ public class RestauranteService {
 	}
 	
 	private Cozinha cozinhaPorId(Long id) {
-		return cozinhaRepository.buscarPorId(id)
+		return cozinhaRepository.findById(id)
 				.orElseThrow(() -> new AssociacaoNaoEncontradaException(String.format("Cozinha de id %d não encontrada", id)));
 	}
 

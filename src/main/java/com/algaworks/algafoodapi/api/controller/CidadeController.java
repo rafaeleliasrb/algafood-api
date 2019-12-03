@@ -39,12 +39,12 @@ public class CidadeController {
 	
 	@GetMapping
 	public List<Cidade> listar() {
-		return cidadeRepository.listarTodos();
+		return cidadeRepository.findAll();
 	}
 	
 	@GetMapping("/{id}")
 	public ResponseEntity<Cidade> porId(@PathVariable Long id) {
-		Optional<Cidade> cidadeOpt = cidadeRepository.buscarPorId(id);
+		Optional<Cidade> cidadeOpt = cidadeRepository.findById(id);
 		if(cidadeOpt.isPresent())
 			return ResponseEntity.ok(cidadeOpt.get());
 		return ResponseEntity.notFound().build();

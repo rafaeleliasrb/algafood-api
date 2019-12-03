@@ -38,12 +38,12 @@ public class EstadoController {
 	
 	@GetMapping
 	public List<Estado> listar() {
-		return estadoRepository.listarTodos();
+		return estadoRepository.findAll();
 	}
 	
 	@GetMapping("/{id}")
 	public ResponseEntity<Estado> porId(@PathVariable Long id) {
-		Optional<Estado> estadoOpt = estadoRepository.buscarPorId(id);
+		Optional<Estado> estadoOpt = estadoRepository.findById(id);
 		if(estadoOpt.isPresent())
 			return ResponseEntity.ok(estadoOpt.get());
 		return ResponseEntity.notFound().build();

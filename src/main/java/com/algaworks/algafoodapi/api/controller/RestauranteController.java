@@ -39,12 +39,12 @@ public class RestauranteController {
 	
 	@GetMapping
 	public List<Restaurante> listar() {
-		return restauranteRepository.listarTodos();
+		return restauranteRepository.findAll();
 	}
 	
 	@GetMapping(value = "/{id}")
 	public ResponseEntity<Restaurante> porId(@PathVariable Long id) {
-		Optional<Restaurante> restauranteOpt = restauranteRepository.buscarPorId(id);
+		Optional<Restaurante> restauranteOpt = restauranteRepository.findById(id);
 		if(restauranteOpt.isPresent())
 			return ResponseEntity.ok(restauranteOpt.get());
 		return ResponseEntity.notFound().build();

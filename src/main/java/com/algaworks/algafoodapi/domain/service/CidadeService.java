@@ -4,6 +4,7 @@ import java.util.function.Supplier;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,29 +29,31 @@ public class CidadeService {
 
 	@Transactional
 	public Cidade adicionar(Cidade cidade) {
-		return cidadeRepository.salvar(cidade);
+		return cidadeRepository.save(cidade);
 	}
 
 	@Transactional
 	public Cidade atualizar(Long id, Cidade cidade) {
-		Cidade cidadeAtual = cidadeRepository.buscarPorId(id)
+		Cidade cidadeAtual = cidadeRepository.findById(id)
 			.orElseThrow(entidadeNaoEncontradaSupplier(cidade.getId()));
 		Estado estado = estadoPorId(cidade.getEstado().getId());
 		cidade.setEstado(estado);
 		BeanUtils.copyProperties(cidade, cidadeAtual, "id");
-		return cidadeRepository.salvar(cidadeAtual);
+		return cidadeRepository.save(cidadeAtual);
 	}
 	
 	@Transactional
 	public void remover(Long id) {
-		Cidade cidade = cidadeRepository.buscarPorId(id)
-				.orElseThrow(entidadeNaoEncontradaSupplier(id));
-		cidadeRepository.remover(cidade);
+		try {
+			cidadeRepository.deleteById(id);
+		} catch (EmptyResultDataAccessException e) {
+			throw new EntidadeNaoEncontradaException(String.format("Cidade de id %d não encontrado", id));
+		}
 	}
 
 
 	private Estado estadoPorId(Long id) {
-		return estadoRepository.buscarPorId(id)
+		return estadoRepository.findById(id)
 				.orElseThrow(() -> new AssociacaoNaoEncontradaException(String.format("Estado de id %d não encontrado", id)));
 	}
 	
