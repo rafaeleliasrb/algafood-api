@@ -1,5 +1,6 @@
 package com.algaworks.algafoodapi.api.controller;
 
+import java.math.BigDecimal;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -92,5 +94,26 @@ public class RestauranteController {
 		} catch (EntidadeNaoEncontradaException e) {
 			return ResponseEntity.notFound().build();
 		}
+	}
+	
+	@GetMapping("/buscar")
+	List<Restaurante> buscar(@RequestParam("nome") String nome, @RequestParam BigDecimal taxaFreteInicial, 
+			@RequestParam BigDecimal taxaFreteFinal) {
+		return restauranteRepository.buscar(nome, taxaFreteInicial, taxaFreteFinal);
+	}
+	
+	@GetMapping("/buscar-com-criteria")
+	List<Restaurante> buscarComCriteria(String nome, BigDecimal taxaFreteInicial, BigDecimal taxaFreteFinal) {
+		return restauranteRepository.buscarComCriteria(nome, taxaFreteInicial, taxaFreteFinal);
+	}
+	
+	@GetMapping("/com-frete-gratis")
+	List<Restaurante> buscarComFreteGratis(String nome) {
+		return restauranteRepository.buscarComFreteGratis(nome);
+	}
+	
+	@GetMapping("/buscar-primeiro")
+	Optional<Restaurante> buscarPrimeiro() {
+		return restauranteRepository.buscarPrimeiro();
 	}
 }
