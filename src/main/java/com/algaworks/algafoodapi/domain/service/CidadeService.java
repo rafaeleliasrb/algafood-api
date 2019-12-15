@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.algaworks.algafoodapi.domain.exception.AssociacaoNaoEncontradaException;
-import com.algaworks.algafoodapi.domain.exception.EntidadeNaoEncontradaException;
+import com.algaworks.algafoodapi.domain.exception.CidadeNaoEncontradaException;
 import com.algaworks.algafoodapi.domain.model.Cidade;
 import com.algaworks.algafoodapi.domain.model.Estado;
 import com.algaworks.algafoodapi.domain.repository.CidadeRepository;
@@ -34,12 +34,16 @@ public class CidadeService {
 
 	@Transactional
 	public Cidade atualizar(Long id, Cidade cidade) {
-		Cidade cidadeAtual = cidadeRepository.findById(id)
-			.orElseThrow(entidadeNaoEncontradaSupplier(cidade.getId()));
+		Cidade cidadeAtual = buscarOuFalhar(id);
 		Estado estado = estadoPorId(cidade.getEstado().getId());
 		cidade.setEstado(estado);
 		BeanUtils.copyProperties(cidade, cidadeAtual, "id");
 		return cidadeRepository.save(cidadeAtual);
+	}
+
+	public Cidade buscarOuFalhar(Long id) {
+		return cidadeRepository.findById(id)
+			.orElseThrow(entidadeNaoEncontradaSupplier(id));
 	}
 	
 	@Transactional
@@ -47,7 +51,7 @@ public class CidadeService {
 		try {
 			cidadeRepository.deleteById(id);
 		} catch (EmptyResultDataAccessException e) {
-			throw new EntidadeNaoEncontradaException(String.format("Cidade de id %d não encontrado", id));
+			throw new CidadeNaoEncontradaException(id);
 		}
 	}
 
@@ -57,7 +61,7 @@ public class CidadeService {
 				.orElseThrow(() -> new AssociacaoNaoEncontradaException(String.format("Estado de id %d não encontrado", id)));
 	}
 	
-	private Supplier<? extends EntidadeNaoEncontradaException> entidadeNaoEncontradaSupplier(Long id) {
-		return () -> new EntidadeNaoEncontradaException(String.format("Cidade de id %d não encontrado", id));
+	private Supplier<? extends CidadeNaoEncontradaException> entidadeNaoEncontradaSupplier(Long id) {
+		return () -> new CidadeNaoEncontradaException(id);
 	}
 }

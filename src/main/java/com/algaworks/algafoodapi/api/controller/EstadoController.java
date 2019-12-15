@@ -2,7 +2,6 @@ package com.algaworks.algafoodapi.api.controller;
 
 import java.net.URI;
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -14,11 +13,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import com.algaworks.algafoodapi.domain.exception.EntidadeEmUsoException;
-import com.algaworks.algafoodapi.domain.exception.EntidadeNaoEncontradaException;
 import com.algaworks.algafoodapi.domain.model.Estado;
 import com.algaworks.algafoodapi.domain.repository.EstadoRepository;
 import com.algaworks.algafoodapi.domain.service.EstadoService;
@@ -42,11 +40,8 @@ public class EstadoController {
 	}
 	
 	@GetMapping("/{id}")
-	public ResponseEntity<Estado> porId(@PathVariable Long id) {
-		Optional<Estado> estadoOpt = estadoRepository.findById(id);
-		if(estadoOpt.isPresent())
-			return ResponseEntity.ok(estadoOpt.get());
-		return ResponseEntity.notFound().build();
+	public Estado buscar(@PathVariable Long id) {
+		return estadoService.buscarOuFalhar(id);
 	}
 	
 	@PostMapping
@@ -58,24 +53,13 @@ public class EstadoController {
 	}
 	
 	@PutMapping("/{id}")
-	public ResponseEntity<Estado> atualizar(@PathVariable Long id, @RequestBody Estado estado) {
-		try {
-			Estado estadoAtualizado = estadoService.atualizar(id, estado);
-			return ResponseEntity.ok(estadoAtualizado);
-		} catch (EntidadeNaoEncontradaException e) {
-			return ResponseEntity.notFound().build();
-		}
+	public Estado atualizar(@PathVariable Long id, @RequestBody Estado estado) {
+		return estadoService.atualizar(id, estado);
 	}
 	
 	@DeleteMapping("/{id}")
-	public ResponseEntity<Object> remover(@PathVariable Long id) {
-		try {
-			estadoService.remover(id);
-			return ResponseEntity.noContent().build();
-		} catch (EntidadeNaoEncontradaException e) {
-			return ResponseEntity.notFound().build();
-		} catch (EntidadeEmUsoException e) {
-			return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
-		}
+	@ResponseStatus(value = HttpStatus.NO_CONTENT)
+	public void remover(@PathVariable Long id) {
+		estadoService.remover(id);
 	}
 }

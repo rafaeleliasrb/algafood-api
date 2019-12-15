@@ -14,6 +14,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import com.algaworks.algafoodapi.domain.exception.EntidadeEmUsoException;
 import com.algaworks.algafoodapi.domain.exception.EntidadeNaoEncontradaException;
+import com.algaworks.algafoodapi.domain.exception.EstadoNaoEncontradaException;
 import com.algaworks.algafoodapi.domain.model.Estado;
 import com.algaworks.algafoodapi.domain.repository.EstadoRepository;
 
@@ -36,10 +37,14 @@ public class EstadoService {
 
 	@Transactional
 	public Estado atualizar(Long id, Estado estado) {
-		Estado estadoAtual = estadoRepository.findById(id)
-			.orElseThrow(entidadeNaoEncontradaSupplier(estado.getId()));
+		Estado estadoAtual = buscarOuFalhar(id);
 		BeanUtils.copyProperties(estado, estadoAtual, "id");
 		return estadoRepository.save(estadoAtual);
+	}
+
+	public Estado buscarOuFalhar(Long id) {
+		return estadoRepository.findById(id)
+			.orElseThrow(entidadeNaoEncontradaSupplier(id));
 	}
 	
 	public void remover(Long id) {
@@ -52,11 +57,11 @@ public class EstadoService {
 		} catch (DataIntegrityViolationException e) {
 			throw new EntidadeEmUsoException(String.format("Estado de id %d está em uso", id));
 		} catch (EmptyResultDataAccessException e) {
-			throw new EntidadeNaoEncontradaException(String.format("Estado de id %d não encontrado", id));
+			throw new EstadoNaoEncontradaException(id);
 		}
 	}
 
 	private Supplier<? extends EntidadeNaoEncontradaException> entidadeNaoEncontradaSupplier(Long id) {
-		return () -> new EntidadeNaoEncontradaException(String.format("Estado de id %d não encontrado", id));
+		return () -> new EstadoNaoEncontradaException(id);
 	}
 }

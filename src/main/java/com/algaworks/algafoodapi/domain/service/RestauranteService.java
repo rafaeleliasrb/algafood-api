@@ -1,7 +1,5 @@
 package com.algaworks.algafoodapi.domain.service;
 
-import java.lang.reflect.Field;
-import java.util.Map;
 import java.util.function.Supplier;
 
 import org.springframework.beans.BeanUtils;
@@ -9,15 +7,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.ReflectionUtils;
 
 import com.algaworks.algafoodapi.domain.exception.AssociacaoNaoEncontradaException;
 import com.algaworks.algafoodapi.domain.exception.EntidadeNaoEncontradaException;
+import com.algaworks.algafoodapi.domain.exception.RestauranteNaoEncontradaException;
 import com.algaworks.algafoodapi.domain.model.Cozinha;
 import com.algaworks.algafoodapi.domain.model.Restaurante;
 import com.algaworks.algafoodapi.domain.repository.CozinhaRepository;
 import com.algaworks.algafoodapi.domain.repository.RestauranteRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
 public class RestauranteService {
@@ -40,12 +37,16 @@ public class RestauranteService {
 
 	@Transactional
 	public Restaurante atualizar(Long id, Restaurante restaurante) {
-		Restaurante restauranteAtual = restauranteRepository.findById(id)
-				.orElseThrow(entidadeNaoEncontradaSupplier(id));
+		Restaurante restauranteAtual = buscarOuFalha(id);
 		Cozinha cozinha = cozinhaPorId(restaurante.getCozinha().getId());
 		restaurante.setCozinha(cozinha);
 		BeanUtils.copyProperties(restaurante, restauranteAtual, "id", "formasPagamento", "dataCadastro", "endereco", "produto");
 		return restauranteRepository.save(restauranteAtual);
+	}
+
+	public Restaurante buscarOuFalha(Long id) {
+		return restauranteRepository.findById(id)
+				.orElseThrow(entidadeNaoEncontradaSupplier(id));
 	}
 
 	@Transactional
@@ -53,30 +54,8 @@ public class RestauranteService {
 		try {
 			restauranteRepository.deleteById(id);
 		} catch (EmptyResultDataAccessException e) {
-			throw new EntidadeNaoEncontradaException(String.format("Restaurante de id %d não encontrado", id));
+			throw new RestauranteNaoEncontradaException(id);
 		}
-	}
-	
-	@Transactional
-	public Restaurante atualizarParcial(Long id, Map<String, Object> propriedadesOrigem) {
-		Restaurante restauranteAtual = restauranteRepository.findById(id)
-				.orElseThrow(entidadeNaoEncontradaSupplier(id));
-		mergeCampos(propriedadesOrigem, restauranteAtual);
-		return restauranteRepository.save(restauranteAtual);
-	}
-	
-	private void mergeCampos(Map<String, Object> propriedadesOrigem, Restaurante restauranteDestino) {
-		ObjectMapper mapper = new ObjectMapper();
-		Restaurante restauranteOrigem = mapper.convertValue(propriedadesOrigem, Restaurante.class);
-		
-		propriedadesOrigem.forEach((nomePropriedade, valorPropriedade) -> {
-			Field field = ReflectionUtils.findField(Restaurante.class, nomePropriedade);
-			field.setAccessible(true);
-			
-			Object novoValor = ReflectionUtils.getField(field, restauranteOrigem);
-			ReflectionUtils.setField(field, restauranteDestino, novoValor);
-		});
-		
 	}
 	
 	private Cozinha cozinhaPorId(Long id) {
@@ -85,6 +64,6 @@ public class RestauranteService {
 	}
 
 	private Supplier<? extends EntidadeNaoEncontradaException> entidadeNaoEncontradaSupplier(Long id) {
-		return () -> new EntidadeNaoEncontradaException(String.format("Restaurante de id %d não encontrado", id));
+		return () -> new RestauranteNaoEncontradaException(id);
 	}
 }
