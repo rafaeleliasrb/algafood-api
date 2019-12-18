@@ -3,6 +3,8 @@ package com.algaworks.algafoodapi.api.controller;
 import java.net.URI;
 import java.util.List;
 
+import javax.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -52,7 +54,7 @@ public class CozinhaController {
 	}
 	
 	@PostMapping
-	public ResponseEntity<Cozinha> adicionar(@RequestBody Cozinha novaCozinha) {
+	public ResponseEntity<Cozinha> adicionar(@RequestBody @Valid Cozinha novaCozinha) {
 		Cozinha cozinha = cozinhaService.adicionar(novaCozinha);
 		
 		URI cozinhaUri = ServletUriComponentsBuilder.fromCurrentContextPath()

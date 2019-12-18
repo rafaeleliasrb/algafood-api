@@ -1,6 +1,5 @@
 package com.algaworks.algafoodapi.api.controller;
 
-import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.net.URI;
 import java.util.List;
@@ -8,14 +7,13 @@ import java.util.Map;
 import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.HttpMessageNotReadableException;
-import org.springframework.http.server.ServletServerHttpRequest;
-import org.springframework.util.ReflectionUtils;
+import org.springframework.validation.BeanPropertyBindingResult;
+import org.springframework.validation.SmartValidator;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -29,11 +27,10 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import com.algaworks.algafoodapi.domain.exception.ValidacaoException;
 import com.algaworks.algafoodapi.domain.model.Restaurante;
 import com.algaworks.algafoodapi.domain.repository.RestauranteRepository;
 import com.algaworks.algafoodapi.domain.service.RestauranteService;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 @RestController
 @RequestMapping(value = "/restaurantes")
@@ -41,11 +38,16 @@ public class RestauranteController {
 
 	private RestauranteRepository restauranteRepository;
 	private RestauranteService restauranteService;
+	private MergeadorDeRecurso mergeadorDeRecurso;
+	private SmartValidator smartValidator;
 	
 	@Autowired
-	public RestauranteController(RestauranteRepository restauranteRepository, RestauranteService restauranteService) {
+	public RestauranteController(RestauranteRepository restauranteRepository, RestauranteService restauranteService, 
+			MergeadorDeRecurso mergeadorDeRecurso, SmartValidator smartValidator) {
 		this.restauranteRepository = restauranteRepository;
 		this.restauranteService = restauranteService;
+		this.mergeadorDeRecurso = mergeadorDeRecurso;
+		this.smartValidator = smartValidator;
 	}
 	
 	@GetMapping
@@ -59,7 +61,7 @@ public class RestauranteController {
 	}
 	
 	@PostMapping
-	public ResponseEntity<Object> adicionar(@RequestBody Restaurante restaurante) {
+	public ResponseEntity<Object> adicionar(@RequestBody @Valid Restaurante restaurante) {
 		Restaurante restauranteNovo = restauranteService.adicionar(restaurante);
 		URI restauranteUri = ServletUriComponentsBuilder.fromCurrentRequest()
 				.path("/{id}").buildAndExpand(restauranteNovo.getId()).toUri();
@@ -81,33 +83,21 @@ public class RestauranteController {
 	public Restaurante atualizarParcial(@PathVariable Long id, @RequestBody Map<String, Object> camposOrigem,
 			HttpServletRequest request) {
 		Restaurante restauranteAtual = restauranteService.buscarOuFalha(id);
-		mergeCampos(camposOrigem, restauranteAtual, request);
+		mergeadorDeRecurso.mergeCampos(Restaurante.class, camposOrigem, restauranteAtual, request);
+		validadarCampos(restauranteAtual, "restaurante");
 		
 		return atualizar(id, restauranteAtual);
 	}
-
-	private void mergeCampos(Map<String, Object> propriedadesOrigem, Restaurante restauranteDestino,
-			HttpServletRequest request) {
-		try {
-			ObjectMapper mapper = new ObjectMapper();
-			Restaurante restauranteOrigem = mapper.convertValue(propriedadesOrigem, Restaurante.class);
-			mapper.configure(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES, true);
-			mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true);
-			
-			propriedadesOrigem.forEach((nomePropriedade, valorPropriedade) -> {
-				Field field = ReflectionUtils.findField(Restaurante.class, nomePropriedade);
-				field.setAccessible(true);
-				
-				Object novoValor = ReflectionUtils.getField(field, restauranteOrigem);
-				ReflectionUtils.setField(field, restauranteDestino, novoValor);
-			});
-		} catch (IllegalArgumentException ex) {
-			Throwable rootCause = ExceptionUtils.getRootCause(ex);
-			throw new HttpMessageNotReadableException(ex.getMessage(), rootCause, 
-					new ServletServerHttpRequest(request));
+	
+	private void validadarCampos(Restaurante restaurante, String objectName) {
+		BeanPropertyBindingResult bindingResult = new BeanPropertyBindingResult(restaurante, objectName);
+		smartValidator.validate(restaurante, bindingResult);
+		
+		if(bindingResult.hasErrors()) {
+			throw new ValidacaoException(bindingResult);
 		}
 	}
-	
+
 	@GetMapping("/buscar")
 	List<Restaurante> buscar(@RequestParam("nome") String nome, @RequestParam BigDecimal taxaFreteInicial, 
 			@RequestParam BigDecimal taxaFreteFinal) {

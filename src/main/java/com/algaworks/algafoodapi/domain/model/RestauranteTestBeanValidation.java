@@ -18,7 +18,6 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.PositiveOrZero;
 import javax.validation.groups.ConvertGroup;
 import javax.validation.groups.Default;
 
@@ -26,15 +25,20 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import com.algaworks.algafoodapi.core.validation.Groups.CozinhaId;
+import com.algaworks.algafoodapi.core.validation.Multiplo;
+import com.algaworks.algafoodapi.core.validation.PositivoOuZero;
+import com.algaworks.algafoodapi.core.validation.ValorZeroIncluiDescricao;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+@ValorZeroIncluiDescricao(valorField = "taxaFrete", descricaoField = "nome", 
+	descricaoObrigatoria = "Frete Grátis")
 @Data
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Entity
-public class Restaurante {
+public class RestauranteTestBeanValidation {
 
 	@EqualsAndHashCode.Include
 	@Id
@@ -45,8 +49,9 @@ public class Restaurante {
 	@Column(nullable = false)
 	private String nome;
 	
+	@Multiplo(numero = 5)
 	@NotNull
-	@PositiveOrZero
+	@PositivoOuZero
 	@Column(name = "taxa_frete", nullable = false)
 	private BigDecimal taxaFrete;
 	
