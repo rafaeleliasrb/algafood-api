@@ -86,12 +86,12 @@ public class CozinhaApiIT {
 	private void incluiRegistrosTesteNoBanco() {
 		cearense = new Cozinha();
 		cearense.setNome("Cearense");
-		cozinhaService.adicionar(cearense);
+		cozinhaService.salvar(cearense);
 		quantidadeDeCozinhas++;
 		
 		Cozinha novaCozinha = new Cozinha();
 		novaCozinha.setNome("Brasielira");
-		cozinhaService.adicionar(novaCozinha);
+		cozinhaService.salvar(novaCozinha);
 		quantidadeDeCozinhas++;
 	}
 }

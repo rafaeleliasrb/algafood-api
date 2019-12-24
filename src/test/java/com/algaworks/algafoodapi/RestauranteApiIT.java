@@ -151,20 +151,20 @@ public class RestauranteApiIT {
 		saborBrasileiro.setCozinha(brasileira);
 		saborBrasileiro.setNome("Sabor brasileiro");
 		saborBrasileiro.setTaxaFrete(BigDecimal.valueOf(15));
-		restauranteService.adicionar(saborBrasileiro);
+		restauranteService.salvar(saborBrasileiro);
 		quantidadeDeRestaurantes++;
 		
 		Restaurante novoRestaurante = new Restaurante();
 		novoRestaurante.setCozinha(brasileira);
 		novoRestaurante.setNome("Padaria Espiritual");
 		novoRestaurante.setTaxaFrete(BigDecimal.valueOf(5.40));
-		restauranteService.adicionar(novoRestaurante);
+		restauranteService.salvar(novoRestaurante);
 		quantidadeDeRestaurantes++;
 	}
 
 	private Cozinha adicionaCozinhaBrasileira() {
 		Cozinha brasileira = new Cozinha();
 		brasileira.setNome("Brasileira");
-		return cozinhaService.adicionar(brasileira);
+		return cozinhaService.salvar(brasileira);
 	}
 }

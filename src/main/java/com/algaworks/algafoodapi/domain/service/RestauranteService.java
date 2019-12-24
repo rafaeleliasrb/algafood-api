@@ -2,7 +2,6 @@ package com.algaworks.algafoodapi.domain.service;
 
 import java.util.function.Supplier;
 
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
@@ -29,19 +28,10 @@ public class RestauranteService {
 	}
 
 	@Transactional
-	public Restaurante adicionar(Restaurante restaurante) {
+	public Restaurante salvar(Restaurante restaurante) {
 		Cozinha cozinha = cozinhaPorId(restaurante.getCozinha().getId());
 		restaurante.setCozinha(cozinha);
 		return restauranteRepository.save(restaurante);
-	}
-
-	@Transactional
-	public Restaurante atualizar(Long id, Restaurante restaurante) {
-		Restaurante restauranteAtual = buscarOuFalha(id);
-		Cozinha cozinha = cozinhaPorId(restaurante.getCozinha().getId());
-		restaurante.setCozinha(cozinha);
-		BeanUtils.copyProperties(restaurante, restauranteAtual, "id", "formasPagamento", "dataCadastro", "endereco", "produto");
-		return restauranteRepository.save(restauranteAtual);
 	}
 
 	public Restaurante buscarOuFalha(Long id) {
@@ -53,6 +43,7 @@ public class RestauranteService {
 	public void remover(Long id) {
 		try {
 			restauranteRepository.deleteById(id);
+			restauranteRepository.flush();
 		} catch (EmptyResultDataAccessException e) {
 			throw new RestauranteNaoEncontradaException(id);
 		}

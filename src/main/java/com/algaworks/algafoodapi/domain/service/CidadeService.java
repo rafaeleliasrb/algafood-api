@@ -2,7 +2,6 @@ package com.algaworks.algafoodapi.domain.service;
 
 import java.util.function.Supplier;
 
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
@@ -28,17 +27,10 @@ public class CidadeService {
 	}
 
 	@Transactional
-	public Cidade adicionar(Cidade cidade) {
-		return cidadeRepository.save(cidade);
-	}
-
-	@Transactional
-	public Cidade atualizar(Long id, Cidade cidade) {
-		Cidade cidadeAtual = buscarOuFalhar(id);
+	public Cidade salvar(Cidade cidade) {
 		Estado estado = estadoPorId(cidade.getEstado().getId());
 		cidade.setEstado(estado);
-		BeanUtils.copyProperties(cidade, cidadeAtual, "id");
-		return cidadeRepository.save(cidadeAtual);
+		return cidadeRepository.save(cidade);
 	}
 
 	public Cidade buscarOuFalhar(Long id) {
@@ -50,6 +42,7 @@ public class CidadeService {
 	public void remover(Long id) {
 		try {
 			cidadeRepository.deleteById(id);
+			cidadeRepository.flush();
 		} catch (EmptyResultDataAccessException e) {
 			throw new CidadeNaoEncontradaException(id);
 		}

@@ -16,16 +16,9 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.PositiveOrZero;
-import javax.validation.groups.ConvertGroup;
-import javax.validation.groups.Default;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-
-import com.algaworks.algafoodapi.core.validation.Groups.CozinhaId;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -40,21 +33,15 @@ public class Restaurante {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	
-	@NotNull
 	@Column(nullable = false)
 	private String nome;
 	
-	@NotNull
-	@PositiveOrZero
 	@Column(name = "taxa_frete", nullable = false)
 	private BigDecimal taxaFrete;
 	
 	@Embedded
 	private Endereco endereco;
 	
-	@Valid
-	@NotNull
-	@ConvertGroup(from = Default.class, to = CozinhaId.class)
 	@ManyToOne
 	@JoinColumn(name = "cozinha_id", nullable = false)
 	private Cozinha cozinha;

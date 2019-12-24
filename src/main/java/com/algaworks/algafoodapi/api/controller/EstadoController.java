@@ -19,6 +19,9 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import com.algaworks.algafoodapi.api.assembler.RepresentationModelAssemblerAndDisassembler;
+import com.algaworks.algafoodapi.api.model.EstadoModel;
+import com.algaworks.algafoodapi.api.model.input.EstadoInput;
 import com.algaworks.algafoodapi.domain.model.Estado;
 import com.algaworks.algafoodapi.domain.repository.EstadoRepository;
 import com.algaworks.algafoodapi.domain.service.EstadoService;
@@ -27,41 +30,56 @@ import com.algaworks.algafoodapi.domain.service.EstadoService;
 @RequestMapping(value = "estados")
 public class EstadoController {
 
-	private EstadoRepository estadoRepository;
-	private EstadoService estadoService;
+	private final EstadoRepository estadoRepository;
+	private final EstadoService estadoService;
+	private final RepresentationModelAssemblerAndDisassembler representationModelAssemblerAndDisassembler;
 
 	@Autowired
-	public EstadoController(EstadoRepository estadoRepository, EstadoService estadoService) {
+	public EstadoController(EstadoRepository estadoRepository, EstadoService estadoService,
+			RepresentationModelAssemblerAndDisassembler representationModelAssemblerAndDisassembler) {
 		this.estadoRepository = estadoRepository;
 		this.estadoService = estadoService;
+		this.representationModelAssemblerAndDisassembler = representationModelAssemblerAndDisassembler;
 	}
 	
 	@GetMapping
-	public List<Estado> listar() {
-		return estadoRepository.findAll();
+	List<EstadoModel> listar() {
+		return representationModelAssemblerAndDisassembler
+				.toCollectionRepresentationModel(EstadoModel.class, estadoRepository.findAll()) ;
 	}
 	
 	@GetMapping("/{id}")
-	public Estado buscar(@PathVariable Long id) {
-		return estadoService.buscarOuFalhar(id);
+	EstadoModel buscar(@PathVariable Long id) {
+		return representationModelAssemblerAndDisassembler
+				.toRepresentationModel(EstadoModel.class, estadoService.buscarOuFalhar(id));
 	}
 	
 	@PostMapping
-	public ResponseEntity<Estado> adicionar(@RequestBody @Valid Estado estado) {
-		Estado estadoNovo = estadoService.adicionar(estado);
+	ResponseEntity<EstadoModel> adicionar(@RequestBody @Valid EstadoInput estadoInput) {
+		Estado estado = representationModelAssemblerAndDisassembler
+				.toRepresentationModel(Estado.class, estadoInput);
+		
+		EstadoModel estadoNovo = representationModelAssemblerAndDisassembler
+				.toRepresentationModel(EstadoModel.class, estadoService.salvar(estado));
+		
 		URI estadoUri = ServletUriComponentsBuilder.fromCurrentRequest()
-				.path("/{id}").buildAndExpand(estado.getId()).toUri();
+				.path("/{id}").buildAndExpand(estadoNovo.getId()).toUri();
 		return ResponseEntity.created(estadoUri).body(estadoNovo);
 	}
 	
 	@PutMapping("/{id}")
-	public Estado atualizar(@PathVariable Long id, @RequestBody Estado estado) {
-		return estadoService.atualizar(id, estado);
+	EstadoModel atualizar(@PathVariable Long id, @RequestBody @Valid EstadoInput estadoInput) {
+		Estado estadoAtual = estadoService.buscarOuFalhar(id);
+		
+		representationModelAssemblerAndDisassembler.copyProperties(estadoInput, estadoAtual);
+		
+		return representationModelAssemblerAndDisassembler
+				.toRepresentationModel(EstadoModel.class, estadoService.salvar(estadoAtual));
 	}
 	
 	@DeleteMapping("/{id}")
 	@ResponseStatus(value = HttpStatus.NO_CONTENT)
-	public void remover(@PathVariable Long id) {
+	void remover(@PathVariable Long id) {
 		estadoService.remover(id);
 	}
 }

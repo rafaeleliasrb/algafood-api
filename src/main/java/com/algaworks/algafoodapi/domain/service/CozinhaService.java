@@ -1,6 +1,5 @@
 package com.algaworks.algafoodapi.domain.service;
 
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -29,19 +28,13 @@ public class CozinhaService {
 	}
 	
 	@Transactional
-	public Cozinha adicionar(Cozinha novaCozinha) {
+	public Cozinha salvar(Cozinha novaCozinha) {
 		return cozinhaRepository.save(novaCozinha);
-	}
-	
-	@Transactional
-	public Cozinha atualizar(Long id, Cozinha cozinha) {
-		Cozinha cozinhaAtual = buscarOuFalhar(id);
-		BeanUtils.copyProperties(cozinha, cozinhaAtual, "id");
-		return cozinhaRepository.save(cozinhaAtual);
 	}
 	
 	public void remover(Long id) {
 		try {
+			//poderia ser substituido pelo flush()
 			transactionTemplate.execute(new TransactionCallbackWithoutResult() {
 			    protected void doInTransactionWithoutResult(TransactionStatus status) {
 			    	cozinhaRepository.deleteById(id);

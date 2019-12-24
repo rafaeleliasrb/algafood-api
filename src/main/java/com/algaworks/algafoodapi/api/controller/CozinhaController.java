@@ -20,7 +20,10 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import com.algaworks.algafoodapi.api.assembler.RepresentationModelAssemblerAndDisassembler;
+import com.algaworks.algafoodapi.api.model.CozinhaModel;
 import com.algaworks.algafoodapi.api.model.CozinhaXMLWrapper;
+import com.algaworks.algafoodapi.api.model.input.CozinhaInput;
 import com.algaworks.algafoodapi.domain.model.Cozinha;
 import com.algaworks.algafoodapi.domain.repository.CozinhaRepository;
 import com.algaworks.algafoodapi.domain.service.CozinhaService;
@@ -29,33 +32,42 @@ import com.algaworks.algafoodapi.domain.service.CozinhaService;
 @RequestMapping(value = "/cozinhas")
 public class CozinhaController {
 
-	private CozinhaRepository cozinhaRepository;
-	private CozinhaService cozinhaService;
+	private final CozinhaRepository cozinhaRepository;
+	private final CozinhaService cozinhaService;
+	private final RepresentationModelAssemblerAndDisassembler representationModelAssemblerAndDisassembler;
 
 	@Autowired
-	public CozinhaController(CozinhaRepository cozinhaRepository, CozinhaService cozinhaService) {
+	public CozinhaController(CozinhaRepository cozinhaRepository, CozinhaService cozinhaService,
+			RepresentationModelAssemblerAndDisassembler representationModelAssemblerAndDisassembler) {
 		this.cozinhaRepository = cozinhaRepository;
 		this.cozinhaService = cozinhaService;
+		this.representationModelAssemblerAndDisassembler = representationModelAssemblerAndDisassembler;
 	}
 	
 	@GetMapping(produces = {MediaType.APPLICATION_JSON_VALUE})
-	public List<Cozinha> listar() {
-		return cozinhaRepository.findAll();
+	List<CozinhaModel> listar() {
+		return representationModelAssemblerAndDisassembler
+				.toCollectionRepresentationModel(CozinhaModel.class, cozinhaRepository.findAll());
 	}
 
 	@GetMapping(produces = {MediaType.APPLICATION_XML_VALUE})
-	public CozinhaXMLWrapper listarXML() {
+	CozinhaXMLWrapper listarXML() {
 		return new CozinhaXMLWrapper(cozinhaRepository.findAll());
 	}
 	
 	@GetMapping(value = "/{id}")
-	public Cozinha buscar(@PathVariable Long id) {
-		return cozinhaService.buscarOuFalhar(id);
+	CozinhaModel buscar(@PathVariable Long id) {
+		return representationModelAssemblerAndDisassembler
+				.toRepresentationModel(CozinhaModel.class, cozinhaService.buscarOuFalhar(id));
 	}
 	
 	@PostMapping
-	public ResponseEntity<Cozinha> adicionar(@RequestBody @Valid Cozinha novaCozinha) {
-		Cozinha cozinha = cozinhaService.adicionar(novaCozinha);
+	ResponseEntity<CozinhaModel> adicionar(@RequestBody @Valid CozinhaInput cozinhaInput) {
+		Cozinha novaCozinha = representationModelAssemblerAndDisassembler
+				.toRepresentationModel(Cozinha.class, cozinhaInput);
+		
+		CozinhaModel cozinha = representationModelAssemblerAndDisassembler
+				.toRepresentationModel(CozinhaModel.class, cozinhaService.salvar(novaCozinha));
 		
 		URI cozinhaUri = ServletUriComponentsBuilder.fromCurrentContextPath()
 				.path("cozinhas/{id}").buildAndExpand(cozinha.getId()).toUri();
@@ -64,12 +76,16 @@ public class CozinhaController {
 	
 	@DeleteMapping("/{id}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	public void remover(@PathVariable Long id) {
+	void remover(@PathVariable Long id) {
 		cozinhaService.remover(id);
 	}
 	
 	@PutMapping("/{id}")
-	public Cozinha atualizar(@RequestBody Cozinha cozinha, @PathVariable Long id) {
-		return cozinhaService.atualizar(id, cozinha);
+	CozinhaModel atualizar(@RequestBody @Valid CozinhaInput cozinhaInput, @PathVariable Long id) {
+		Cozinha cozinhaAtual = cozinhaService.buscarOuFalhar(id);
+		representationModelAssemblerAndDisassembler.copyProperties(cozinhaInput, cozinhaAtual);
+		
+		return representationModelAssemblerAndDisassembler
+				.toRepresentationModel(CozinhaModel.class, cozinhaService.salvar(cozinhaAtual));
 	}
 }

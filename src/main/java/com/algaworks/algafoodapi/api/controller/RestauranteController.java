@@ -27,6 +27,10 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import com.algaworks.algafoodapi.api.assembler.RestauranteInputAssemblerAndDisassembler;
+import com.algaworks.algafoodapi.api.assembler.RestauranteModelAssembler;
+import com.algaworks.algafoodapi.api.model.RestauranteModel;
+import com.algaworks.algafoodapi.api.model.input.RestauranteInput;
 import com.algaworks.algafoodapi.domain.exception.ValidacaoException;
 import com.algaworks.algafoodapi.domain.model.Restaurante;
 import com.algaworks.algafoodapi.domain.repository.RestauranteRepository;
@@ -36,60 +40,71 @@ import com.algaworks.algafoodapi.domain.service.RestauranteService;
 @RequestMapping(value = "/restaurantes")
 public class RestauranteController {
 
-	private RestauranteRepository restauranteRepository;
-	private RestauranteService restauranteService;
-	private MergeadorDeRecurso mergeadorDeRecurso;
-	private SmartValidator smartValidator;
+	private final RestauranteRepository restauranteRepository;
+	private final RestauranteService restauranteService;
+	private final MergeadorDeRecurso mergeadorDeRecurso;
+	private final SmartValidator smartValidator;
+	private final RestauranteModelAssembler restauranteModelAssembler;
+	private final RestauranteInputAssemblerAndDisassembler restauranteInputAssemblerAndDisassembler;
 	
 	@Autowired
 	public RestauranteController(RestauranteRepository restauranteRepository, RestauranteService restauranteService, 
-			MergeadorDeRecurso mergeadorDeRecurso, SmartValidator smartValidator) {
+			MergeadorDeRecurso mergeadorDeRecurso, SmartValidator smartValidator, 
+			RestauranteModelAssembler restauranteModelAssembler, 
+			RestauranteInputAssemblerAndDisassembler restauranteInputAssemblerAndDisassembler) {
 		this.restauranteRepository = restauranteRepository;
 		this.restauranteService = restauranteService;
 		this.mergeadorDeRecurso = mergeadorDeRecurso;
 		this.smartValidator = smartValidator;
+		this.restauranteModelAssembler = restauranteModelAssembler;
+		this.restauranteInputAssemblerAndDisassembler = restauranteInputAssemblerAndDisassembler;
 	}
 	
 	@GetMapping
-	public List<Restaurante> listar() {
-		return restauranteRepository.findAll();
+	List<RestauranteModel> listar() {
+		return restauranteModelAssembler.toCollectionModel(restauranteRepository.findAll());
 	}
 	
 	@GetMapping(value = "/{id}")
-	public Restaurante buscar(@PathVariable Long id) {
-		return restauranteService.buscarOuFalha(id);
+	RestauranteModel buscar(@PathVariable Long id) {
+		return restauranteModelAssembler.toModel(restauranteService.buscarOuFalha(id));
 	}
 	
 	@PostMapping
-	public ResponseEntity<Object> adicionar(@RequestBody @Valid Restaurante restaurante) {
-		Restaurante restauranteNovo = restauranteService.adicionar(restaurante);
+	ResponseEntity<Object> adicionar(@RequestBody @Valid RestauranteInput restauranteInput) {
+		Restaurante restaurante = restauranteInputAssemblerAndDisassembler.toDomainModel(restauranteInput);
+		RestauranteModel restauranteNovo = restauranteModelAssembler
+				.toModel(restauranteService.salvar(restaurante));
 		URI restauranteUri = ServletUriComponentsBuilder.fromCurrentRequest()
 				.path("/{id}").buildAndExpand(restauranteNovo.getId()).toUri();
 		return ResponseEntity.created(restauranteUri).body(restauranteNovo);
 	}
 	
 	@PutMapping(value = "{id}")
-	public Restaurante atualizar(@PathVariable Long id, @RequestBody Restaurante restaurante) {
-		return restauranteService.atualizar(id, restaurante);
+	RestauranteModel atualizar(@PathVariable Long id, @RequestBody @Valid RestauranteInput restauranteInput) {
+		Restaurante restauranteAtual = restauranteService.buscarOuFalha(id);
+		restauranteInputAssemblerAndDisassembler.copyToDomainObject(restauranteInput, restauranteAtual);
+		return restauranteModelAssembler.toModel(restauranteService.salvar(restauranteAtual));
 	}
 	
 	@DeleteMapping("/{id}")
 	@ResponseStatus(value = HttpStatus.NO_CONTENT)
-	public void remover(@PathVariable Long id) {
+	void remover(@PathVariable Long id) {
 		restauranteService.remover(id);
 	}
 	
 	@PatchMapping("/{id}")
-	public Restaurante atualizarParcial(@PathVariable Long id, @RequestBody Map<String, Object> camposOrigem,
+	RestauranteModel atualizarParcial(@PathVariable Long id, @RequestBody Map<String, Object> camposOrigem,
 			HttpServletRequest request) {
-		Restaurante restauranteAtual = restauranteService.buscarOuFalha(id);
-		mergeadorDeRecurso.mergeCampos(Restaurante.class, camposOrigem, restauranteAtual, request);
-		validadarCampos(restauranteAtual, "restaurante");
+		RestauranteInput restauranteAtual = 
+				restauranteInputAssemblerAndDisassembler.toInput(restauranteService.buscarOuFalha(id));
+		mergeadorDeRecurso.mergeCampos(RestauranteInput.class, camposOrigem, restauranteAtual, request);
+		validadarCampos(restauranteAtual, "restauranteInput");
 		
 		return atualizar(id, restauranteAtual);
 	}
 	
-	private void validadarCampos(Restaurante restaurante, String objectName) {
+	private void validadarCampos(RestauranteInput restaurante, String objectName) {
 		BeanPropertyBindingResult bindingResult = new BeanPropertyBindingResult(restaurante, objectName);
 		smartValidator.validate(restaurante, bindingResult);
 		
@@ -99,23 +114,26 @@ public class RestauranteController {
 	}
 
 	@GetMapping("/buscar")
-	List<Restaurante> buscar(@RequestParam("nome") String nome, @RequestParam BigDecimal taxaFreteInicial, 
+	List<RestauranteModel> buscar(@RequestParam("nome") String nome, @RequestParam BigDecimal taxaFreteInicial, 
 			@RequestParam BigDecimal taxaFreteFinal) {
-		return restauranteRepository.buscar(nome, taxaFreteInicial, taxaFreteFinal);
+		return restauranteModelAssembler
+				.toCollectionModel(restauranteRepository.buscar(nome, taxaFreteInicial, taxaFreteFinal));
 	}
 	
 	@GetMapping("/buscar-com-criteria")
-	List<Restaurante> buscarComCriteria(String nome, BigDecimal taxaFreteInicial, BigDecimal taxaFreteFinal) {
-		return restauranteRepository.buscarComCriteria(nome, taxaFreteInicial, taxaFreteFinal);
+	List<RestauranteModel> buscarComCriteria(String nome, BigDecimal taxaFreteInicial, BigDecimal taxaFreteFinal) {
+		return restauranteModelAssembler
+				.toCollectionModel(restauranteRepository.buscarComCriteria(nome, taxaFreteInicial, taxaFreteFinal));
 	}
 	
 	@GetMapping("/com-frete-gratis")
-	List<Restaurante> buscarComFreteGratis(String nome) {
-		return restauranteRepository.buscarComFreteGratis(nome);
+	List<RestauranteModel> buscarComFreteGratis(String nome) {
+		return restauranteModelAssembler
+				.toCollectionModel(restauranteRepository.buscarComFreteGratis(nome));
 	}
 	
 	@GetMapping("/buscar-primeiro")
-	Optional<Restaurante> buscarPrimeiro() {
-		return restauranteRepository.buscarPrimeiro();
+	Optional<RestauranteModel> buscarPrimeiro() {
+		return restauranteModelAssembler.toOptionalModel(restauranteRepository.buscarPrimeiro());
 	}
 }

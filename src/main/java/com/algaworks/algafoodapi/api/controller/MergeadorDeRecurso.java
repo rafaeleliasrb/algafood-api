@@ -11,7 +11,6 @@ import org.springframework.http.server.ServletServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ReflectionUtils;
 
-import com.algaworks.algafoodapi.domain.model.Restaurante;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -27,7 +26,7 @@ public class MergeadorDeRecurso {
 			mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true);
 			
 			propriedadesOrigem.forEach((nomePropriedade, valorPropriedade) -> {
-				Field field = ReflectionUtils.findField(Restaurante.class, nomePropriedade);
+				Field field = ReflectionUtils.findField(clazz, nomePropriedade);
 				field.setAccessible(true);
 				
 				Object novoValor = ReflectionUtils.getField(field, objetoOrigem);

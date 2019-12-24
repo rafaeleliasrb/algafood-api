@@ -27,7 +27,7 @@ public class CadastroCozinhaIT {
 		Cozinha novaCozinha = new Cozinha();
 		novaCozinha.setNome("Peruana");
 		
-		cozinhaService.adicionar(novaCozinha);
+		cozinhaService.salvar(novaCozinha);
 	
 		assertThat(novaCozinha).isNotNull();
 		assertThat(novaCozinha.getId()).isNotNull();
@@ -38,7 +38,7 @@ public class CadastroCozinhaIT {
 		Cozinha novaCozinha = new Cozinha();
 		novaCozinha.setNome(null);
 		
-		cozinhaService.adicionar(novaCozinha);
+		cozinhaService.salvar(novaCozinha);
 	}
 
 	@Test(expected = EntidadeEmUsoException.class)
