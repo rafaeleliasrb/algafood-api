@@ -63,7 +63,7 @@ public class EstadoController {
 				.toRepresentationModel(EstadoModel.class, estadoService.salvar(estado));
 		
 		URI estadoUri = ServletUriComponentsBuilder.fromCurrentRequest()
-				.path("/{id}").buildAndExpand(estadoNovo.getId()).toUri();
+				.path("/estados/{id}").buildAndExpand(estadoNovo.getId()).toUri();
 		return ResponseEntity.created(estadoUri).body(estadoNovo);
 	}
 	
