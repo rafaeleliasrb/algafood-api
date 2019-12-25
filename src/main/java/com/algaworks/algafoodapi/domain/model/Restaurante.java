@@ -20,8 +20,10 @@ import javax.persistence.OneToMany;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import lombok.AccessLevel;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Setter;
 
 @Data
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
@@ -41,6 +43,9 @@ public class Restaurante {
 	
 	@Embedded
 	private Endereco endereco;
+	
+	@Setter(AccessLevel.NONE)
+	private Boolean ativo = Boolean.TRUE;
 	
 	@ManyToOne
 	@JoinColumn(name = "cozinha_id", nullable = false)
@@ -62,4 +67,12 @@ public class Restaurante {
 	
 	@OneToMany(mappedBy = "restaurante")
 	private List<Produto> produtos = new ArrayList<>();
+	
+	public void ativar() {
+		this.ativo = Boolean.TRUE;
+	}
+	
+	public void inativar() {
+		this.ativo = Boolean.FALSE;
+	}
 }

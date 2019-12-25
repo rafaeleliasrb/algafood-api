@@ -48,6 +48,18 @@ public class RestauranteService {
 			throw new RestauranteNaoEncontradaException(id);
 		}
 	}
+
+	@Transactional
+	public void ativar(Long idRestaurante) {
+		Restaurante restaurante = buscarOuFalha(idRestaurante);
+		restaurante.ativar();
+	}
+	
+	@Transactional
+	public void inativar(Long idRestaurante) {
+		Restaurante restaurante = buscarOuFalha(idRestaurante);
+		restaurante.inativar();
+	}
 	
 	private Cozinha cozinhaPorId(Long id) {
 		return cozinhaRepository.findById(id)

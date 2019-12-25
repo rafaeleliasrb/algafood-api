@@ -104,6 +104,18 @@ public class RestauranteController {
 		return atualizar(id, restauranteAtual);
 	}
 	
+	@PutMapping(value = "{idRestaurante}/ativo")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	void ativar(@PathVariable Long idRestaurante) {
+		restauranteService.ativar(idRestaurante);
+	}
+	
+	@DeleteMapping(value = "{idRestaurante}/ativo")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	void inativar(@PathVariable Long idRestaurante) {
+		restauranteService.inativar(idRestaurante);
+	}
+	
 	private void validadarCampos(RestauranteInput restaurante, String objectName) {
 		BeanPropertyBindingResult bindingResult = new BeanPropertyBindingResult(restaurante, objectName);
 		smartValidator.validate(restaurante, bindingResult);
