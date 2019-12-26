@@ -10,27 +10,36 @@ import org.springframework.transaction.annotation.Transactional;
 import com.algaworks.algafoodapi.domain.exception.AssociacaoNaoEncontradaException;
 import com.algaworks.algafoodapi.domain.exception.EntidadeNaoEncontradaException;
 import com.algaworks.algafoodapi.domain.exception.RestauranteNaoEncontradaException;
+import com.algaworks.algafoodapi.domain.model.Cidade;
 import com.algaworks.algafoodapi.domain.model.Cozinha;
 import com.algaworks.algafoodapi.domain.model.Restaurante;
+import com.algaworks.algafoodapi.domain.repository.CidadeRepository;
 import com.algaworks.algafoodapi.domain.repository.CozinhaRepository;
 import com.algaworks.algafoodapi.domain.repository.RestauranteRepository;
 
 @Service
 public class RestauranteService {
 	
-	private RestauranteRepository restauranteRepository;
-	private CozinhaRepository cozinhaRepository;
+	private final RestauranteRepository restauranteRepository;
+	private final CozinhaRepository cozinhaRepository;
+	private final CidadeRepository cidadeRepository;
 
 	@Autowired
-	public RestauranteService(RestauranteRepository restauranteRepository, CozinhaRepository cozinhaRepository) {
+	public RestauranteService(RestauranteRepository restauranteRepository, CozinhaRepository cozinhaRepository,
+			CidadeRepository cidadeRepository) {
 		this.restauranteRepository = restauranteRepository;
 		this.cozinhaRepository = cozinhaRepository;
+		this.cidadeRepository = cidadeRepository;
 	}
 
 	@Transactional
 	public Restaurante salvar(Restaurante restaurante) {
 		Cozinha cozinha = cozinhaPorId(restaurante.getCozinha().getId());
 		restaurante.setCozinha(cozinha);
+		
+		Cidade cidade = cidadePorId(restaurante.getEndereco().getCidade().getId());
+		restaurante.getEndereco().setCidade(cidade);
+		
 		return restauranteRepository.save(restaurante);
 	}
 
@@ -66,6 +75,11 @@ public class RestauranteService {
 				.orElseThrow(() -> new AssociacaoNaoEncontradaException(String.format("Cozinha de id %d não encontrada", id)));
 	}
 
+	private Cidade cidadePorId(Long id) {
+		return cidadeRepository.findById(id)
+				.orElseThrow(() -> new AssociacaoNaoEncontradaException(String.format("Cidade de id %d não encontrada", id)));
+	}
+	
 	private Supplier<? extends EntidadeNaoEncontradaException> entidadeNaoEncontradaSupplier(Long id) {
 		return () -> new RestauranteNaoEncontradaException(id);
 	}

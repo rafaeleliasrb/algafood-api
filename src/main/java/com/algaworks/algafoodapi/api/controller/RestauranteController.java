@@ -32,6 +32,7 @@ import com.algaworks.algafoodapi.api.assembler.RestauranteModelAssembler;
 import com.algaworks.algafoodapi.api.model.RestauranteModel;
 import com.algaworks.algafoodapi.api.model.input.RestauranteInput;
 import com.algaworks.algafoodapi.domain.exception.ValidacaoException;
+import com.algaworks.algafoodapi.domain.model.Cidade;
 import com.algaworks.algafoodapi.domain.model.Restaurante;
 import com.algaworks.algafoodapi.domain.repository.RestauranteRepository;
 import com.algaworks.algafoodapi.domain.service.RestauranteService;
@@ -73,8 +74,10 @@ public class RestauranteController {
 	@PostMapping
 	ResponseEntity<Object> adicionar(@RequestBody @Valid RestauranteInput restauranteInput) {
 		Restaurante restaurante = restauranteInputAssemblerAndDisassembler.toDomainModel(restauranteInput);
+		
 		RestauranteModel restauranteNovo = restauranteModelAssembler
 				.toModel(restauranteService.salvar(restaurante));
+		
 		URI restauranteUri = ServletUriComponentsBuilder.fromCurrentRequest()
 				.path("/{id}").buildAndExpand(restauranteNovo.getId()).toUri();
 		return ResponseEntity.created(restauranteUri).body(restauranteNovo);
@@ -83,6 +86,11 @@ public class RestauranteController {
 	@PutMapping(value = "{id}")
 	RestauranteModel atualizar(@PathVariable Long id, @RequestBody @Valid RestauranteInput restauranteInput) {
 		Restaurante restauranteAtual = restauranteService.buscarOuFalha(id);
+		
+		if(restauranteAtual.getEndereco() != null) {
+			restauranteAtual.getEndereco().setCidade(new Cidade());
+		}
+		
 		restauranteInputAssemblerAndDisassembler.copyToDomainObject(restauranteInput, restauranteAtual);
 		return restauranteModelAssembler.toModel(restauranteService.salvar(restauranteAtual));
 	}
