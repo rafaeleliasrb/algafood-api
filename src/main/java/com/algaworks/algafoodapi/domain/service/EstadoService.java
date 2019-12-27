@@ -34,6 +34,7 @@ public class EstadoService {
 			.orElseThrow(entidadeNaoEncontradaSupplier(id));
 	}
 	
+	@Transactional
 	public void remover(Long id) {
 		try {
 	    	estadoRepository.deleteById(id);

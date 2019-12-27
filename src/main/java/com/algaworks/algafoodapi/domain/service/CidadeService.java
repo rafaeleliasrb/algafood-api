@@ -48,7 +48,6 @@ public class CidadeService {
 		}
 	}
 
-
 	private Estado estadoPorId(Long id) {
 		return estadoRepository.findById(id)
 				.orElseThrow(() -> new AssociacaoNaoEncontradaException(String.format("Estado de id %d não encontrado", id)));

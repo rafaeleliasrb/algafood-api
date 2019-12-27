@@ -70,7 +70,7 @@ public class CozinhaController {
 				.toRepresentationModel(CozinhaModel.class, cozinhaService.salvar(novaCozinha));
 		
 		URI cozinhaUri = ServletUriComponentsBuilder.fromCurrentContextPath()
-				.path("cozinhas/{id}").buildAndExpand(cozinha.getId()).toUri();
+				.path("/{id}").buildAndExpand(cozinha.getId()).toUri();
 		return ResponseEntity.created(cozinhaUri).body(cozinha);
 	}
 	

@@ -31,6 +31,7 @@ public class FormaPagamentoService {
 				.orElseThrow(() -> new FormaPagamentoNaoEncontradaException(id));
 	}
 	
+	@Transactional
 	public void remover(Long id) {
 		try {
 			formaPagamentoRepository.deleteById(id);

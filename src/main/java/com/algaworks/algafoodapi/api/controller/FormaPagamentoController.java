@@ -63,7 +63,7 @@ public class FormaPagamentoController {
 				.toRepresentationModel(FormaPagamentoModel.class, service.salvar(formaPagamento));
 		
 		URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
-				.path("{id}").buildAndExpand(formaPagamentoNova).toUri();
+				.path("/{id}").buildAndExpand(formaPagamentoNova.getId()).toUri();
 		
 		return ResponseEntity.created(uri).body(formaPagamentoNova);
 	}
