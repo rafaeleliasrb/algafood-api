@@ -1,5 +1,7 @@
 package com.algaworks.algafoodapi.domain.service;
 
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
@@ -22,9 +24,13 @@ public class UsuarioService {
 	
 	@Transactional
 	public Usuario salvar(Usuario usuario) {
+		usuarioRepository.detached(usuario);
+		
+		verificarEmailJaEmUso(usuario);
+		
 		return usuarioRepository.save(usuario);
 	}
-	
+
 	public Usuario buscarOuFalhar(Long id) {
 		return usuarioRepository.findById(id)
 				.orElseThrow(() -> new UsuarioNaoEncontradoException(id));
@@ -47,6 +53,13 @@ public class UsuarioService {
 		vericarSenhaAtualCorreta(usuario.getSenha(), senhaAtual);
 		
 		usuario.setSenha(novaSenha);
+	}
+	
+	private void verificarEmailJaEmUso(Usuario usuario) {
+		Optional<Usuario> usuarioExistente = usuarioRepository.findByEmail(usuario.getEmail());
+		if(usuarioExistente.isPresent() && !usuarioExistente.get().equals(usuario)) {
+			throw new NegocioException(String.format("Já existe usuário cadastrado com esse email %s", usuario.getEmail()));
+		}
 	}
 
 	private void vericarSenhaAtualCorreta(String senha, String senhaAtual) {
