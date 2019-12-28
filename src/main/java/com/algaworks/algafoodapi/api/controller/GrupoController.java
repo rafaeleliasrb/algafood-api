@@ -30,9 +30,9 @@ import com.algaworks.algafoodapi.domain.service.GrupoService;
 @RequestMapping("/grupos")
 public class GrupoController {
 
-	private GrupoService grupoService;
-	private GrupoRepository grupoRepository;
-	private RepresentationModelAssemblerAndDisassembler representationModelAssemblerAndDisassembler;
+	private final GrupoService grupoService;
+	private final GrupoRepository grupoRepository;
+	private final RepresentationModelAssemblerAndDisassembler representationModelAssemblerAndDisassembler;
 
 	@Autowired
 	public GrupoController(GrupoService grupoService, GrupoRepository grupoRepository,
