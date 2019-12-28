@@ -88,6 +88,20 @@ public class RestauranteService {
 		
 		restaurante.associarFormaPagamento(formaPagamento);
 	}
+
+	@Transactional
+	public void abrir(Long idRestaurante) {
+		Restaurante restaurante = buscarOuFalha(idRestaurante);
+		
+		restaurante.abrir();
+	}
+	
+	@Transactional
+	public void fechar(Long idRestaurante) {
+		Restaurante restaurante = buscarOuFalha(idRestaurante);
+		
+		restaurante.fechar();
+	}
 	
 	private Cozinha cozinhaPorId(Long id) {
 		return cozinhaRepository.findById(id)

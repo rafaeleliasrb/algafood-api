@@ -124,6 +124,18 @@ public class RestauranteController {
 		restauranteService.inativar(idRestaurante);
 	}
 	
+	@PutMapping("/{idRestaurante}/abertura")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	void abrir(@PathVariable Long idRestaurante) {
+		restauranteService.abrir(idRestaurante);
+	}
+	
+	@PutMapping("/{idRestaurante}/fechamento")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	void fechar(@PathVariable Long idRestaurante) {
+		restauranteService.fechar(idRestaurante);
+	}
+	
 	private void validadarCampos(RestauranteInput restaurante, String objectName) {
 		BeanPropertyBindingResult bindingResult = new BeanPropertyBindingResult(restaurante, objectName);
 		smartValidator.validate(restaurante, bindingResult);

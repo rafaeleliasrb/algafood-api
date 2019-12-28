@@ -49,6 +49,9 @@ public class Restaurante {
 	@Setter(AccessLevel.NONE)
 	private Boolean ativo = Boolean.TRUE;
 	
+	@Setter(AccessLevel.NONE)
+	private Boolean aberto = Boolean.FALSE;
+	
 	@ManyToOne
 	@JoinColumn(name = "cozinha_id", nullable = false)
 	private Cozinha cozinha;
@@ -78,6 +81,14 @@ public class Restaurante {
 		this.ativo = Boolean.FALSE;
 	}
 
+	public void abrir() {
+		this.aberto = Boolean.TRUE;
+	}
+	
+	public void fechar() {
+		this.aberto = Boolean.FALSE;
+	}
+	
 	public boolean removerFormaPagamento(FormaPagamento formaPagamento) {
 		return getFormasPagamento().remove(formaPagamento);
 	}
