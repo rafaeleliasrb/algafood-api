@@ -1,5 +1,6 @@
 package com.algaworks.algafoodapi.api.assembler;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,7 +22,7 @@ public class RepresentationModelAssemblerAndDisassembler {
 		return modelMapper.map(object, clazz);
 	}
 	
-	public <T, E> List<T> toCollectionRepresentationModel(Class<T> clazz, List<E> objects) {
+	public <T, E> List<T> toCollectionRepresentationModel(Class<T> clazz, Collection<E> objects) {
 		return objects.stream()
 				.map(domainModel -> toRepresentationModel(clazz, domainModel))
 				.collect(Collectors.toList());

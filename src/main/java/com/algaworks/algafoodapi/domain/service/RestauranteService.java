@@ -12,6 +12,7 @@ import com.algaworks.algafoodapi.domain.exception.EntidadeNaoEncontradaException
 import com.algaworks.algafoodapi.domain.exception.RestauranteNaoEncontradaException;
 import com.algaworks.algafoodapi.domain.model.Cidade;
 import com.algaworks.algafoodapi.domain.model.Cozinha;
+import com.algaworks.algafoodapi.domain.model.FormaPagamento;
 import com.algaworks.algafoodapi.domain.model.Restaurante;
 import com.algaworks.algafoodapi.domain.repository.CidadeRepository;
 import com.algaworks.algafoodapi.domain.repository.CozinhaRepository;
@@ -23,13 +24,15 @@ public class RestauranteService {
 	private final RestauranteRepository restauranteRepository;
 	private final CozinhaRepository cozinhaRepository;
 	private final CidadeRepository cidadeRepository;
+	private final FormaPagamentoService formaPagamentoService;
 
 	@Autowired
 	public RestauranteService(RestauranteRepository restauranteRepository, CozinhaRepository cozinhaRepository,
-			CidadeRepository cidadeRepository) {
+			CidadeRepository cidadeRepository, FormaPagamentoService formaPagamentoService) {
 		this.restauranteRepository = restauranteRepository;
 		this.cozinhaRepository = cozinhaRepository;
 		this.cidadeRepository = cidadeRepository;
+		this.formaPagamentoService = formaPagamentoService;
 	}
 
 	@Transactional
@@ -68,6 +71,22 @@ public class RestauranteService {
 	public void inativar(Long idRestaurante) {
 		Restaurante restaurante = buscarOuFalha(idRestaurante);
 		restaurante.inativar();
+	}
+
+	@Transactional
+	public void desassociarFormaPagamento(Long idRestaurante, Long idFormaPagamento) {
+		Restaurante restaurante = buscarOuFalha(idRestaurante);
+		FormaPagamento formaPagamento = formaPagamentoService.buscarOuFalhar(idFormaPagamento);
+		
+		restaurante.removerFormaPagamento(formaPagamento);
+	}
+	
+	@Transactional
+	public void associarFormaPagamento(Long idRestaurante, Long idFormaPagamento) {
+		Restaurante restaurante = buscarOuFalha(idRestaurante);
+		FormaPagamento formaPagamento = formaPagamentoService.buscarOuFalhar(idFormaPagamento);
+		
+		restaurante.associarFormaPagamento(formaPagamento);
 	}
 	
 	private Cozinha cozinhaPorId(Long id) {
