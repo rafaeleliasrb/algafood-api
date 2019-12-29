@@ -31,6 +31,8 @@ import com.algaworks.algafoodapi.api.assembler.RestauranteInputAssemblerAndDisas
 import com.algaworks.algafoodapi.api.assembler.RestauranteModelAssembler;
 import com.algaworks.algafoodapi.api.model.RestauranteModel;
 import com.algaworks.algafoodapi.api.model.input.RestauranteInput;
+import com.algaworks.algafoodapi.domain.exception.NegocioException;
+import com.algaworks.algafoodapi.domain.exception.RestauranteNaoEncontradoException;
 import com.algaworks.algafoodapi.domain.exception.ValidacaoException;
 import com.algaworks.algafoodapi.domain.model.Cidade;
 import com.algaworks.algafoodapi.domain.model.Restaurante;
@@ -136,6 +138,26 @@ public class RestauranteController {
 		restauranteService.fechar(idRestaurante);
 	}
 	
+	@PutMapping("/ativacoes")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	void ativarMutiplos(@RequestBody List<Long> idsRestaurante) {
+		try {
+			restauranteService.ativar(idsRestaurante);
+		} catch (RestauranteNaoEncontradoException e) {
+			throw new NegocioException(e.getMessage(), e);
+		}
+	}
+	
+	@DeleteMapping("/ativacoes")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	void desativarMutiplos(@RequestBody List<Long> idsRestaurante) {
+		try {
+			restauranteService.desativar(idsRestaurante);
+		} catch (RestauranteNaoEncontradoException e) {
+			throw new NegocioException(e.getMessage(), e);
+		}
+	}
+	
 	private void validadarCampos(RestauranteInput restaurante, String objectName) {
 		BeanPropertyBindingResult bindingResult = new BeanPropertyBindingResult(restaurante, objectName);
 		smartValidator.validate(restaurante, bindingResult);
@@ -145,6 +167,7 @@ public class RestauranteController {
 		}
 	}
 
+	/* Endpoints extras */
 	@GetMapping("/buscar")
 	List<RestauranteModel> buscar(@RequestParam("nome") String nome, @RequestParam BigDecimal taxaFreteInicial, 
 			@RequestParam BigDecimal taxaFreteFinal) {

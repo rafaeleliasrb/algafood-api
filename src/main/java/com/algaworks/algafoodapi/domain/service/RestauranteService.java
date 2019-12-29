@@ -1,5 +1,6 @@
 package com.algaworks.algafoodapi.domain.service;
 
+import java.util.List;
 import java.util.function.Supplier;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,7 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.algaworks.algafoodapi.domain.exception.AssociacaoNaoEncontradaException;
 import com.algaworks.algafoodapi.domain.exception.EntidadeNaoEncontradaException;
-import com.algaworks.algafoodapi.domain.exception.RestauranteNaoEncontradaException;
+import com.algaworks.algafoodapi.domain.exception.RestauranteNaoEncontradoException;
 import com.algaworks.algafoodapi.domain.model.Cidade;
 import com.algaworks.algafoodapi.domain.model.Cozinha;
 import com.algaworks.algafoodapi.domain.model.FormaPagamento;
@@ -61,7 +62,7 @@ public class RestauranteService {
 			restauranteRepository.deleteById(id);
 			restauranteRepository.flush();
 		} catch (EmptyResultDataAccessException e) {
-			throw new RestauranteNaoEncontradaException(id);
+			throw new RestauranteNaoEncontradoException(id);
 		}
 	}
 
@@ -96,14 +97,12 @@ public class RestauranteService {
 	@Transactional
 	public void abrir(Long idRestaurante) {
 		Restaurante restaurante = buscarOuFalha(idRestaurante);
-		
 		restaurante.abrir();
 	}
 	
 	@Transactional
 	public void fechar(Long idRestaurante) {
 		Restaurante restaurante = buscarOuFalha(idRestaurante);
-		
 		restaurante.fechar();
 	}
 
@@ -123,6 +122,16 @@ public class RestauranteService {
 		restaurante.removerResponsavel(responsavel);
 	}
 	
+	@Transactional
+	public void ativar(List<Long> idsRestaurante) {
+		idsRestaurante.forEach(this::ativar);
+	}
+
+	@Transactional
+	public void desativar(List<Long> idsRestaurante) {
+		idsRestaurante.forEach(this::inativar);
+	}
+	
 	private Cozinha cozinhaPorId(Long id) {
 		return cozinhaRepository.findById(id)
 				.orElseThrow(() -> new AssociacaoNaoEncontradaException(String.format("Cozinha de id %d não encontrada", id)));
@@ -134,6 +143,6 @@ public class RestauranteService {
 	}
 	
 	private Supplier<? extends EntidadeNaoEncontradaException> entidadeNaoEncontradaSupplier(Long id) {
-		return () -> new RestauranteNaoEncontradaException(id);
+		return () -> new RestauranteNaoEncontradoException(id);
 	}
 }
