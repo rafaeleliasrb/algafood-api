@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.algaworks.algafoodapi.domain.exception.NegocioException;
 import com.algaworks.algafoodapi.domain.exception.UsuarioNaoEncontradoException;
+import com.algaworks.algafoodapi.domain.model.Grupo;
 import com.algaworks.algafoodapi.domain.model.Usuario;
 import com.algaworks.algafoodapi.domain.repository.UsuarioRepository;
 
@@ -16,10 +17,12 @@ import com.algaworks.algafoodapi.domain.repository.UsuarioRepository;
 public class UsuarioService {
 
 	private final UsuarioRepository usuarioRepository;
+	private final GrupoService grupoService;
 
 	@Autowired
-	public UsuarioService(UsuarioRepository usuarioRepository) {
+	public UsuarioService(UsuarioRepository usuarioRepository, GrupoService grupoService) {
 		this.usuarioRepository = usuarioRepository;
+		this.grupoService = grupoService;
 	}
 	
 	@Transactional
@@ -55,6 +58,22 @@ public class UsuarioService {
 		usuario.setSenha(novaSenha);
 	}
 	
+	@Transactional
+	public void associarGrupo(Long idUsuario, Long idGrupo) {
+		Usuario usuario = buscarOuFalhar(idUsuario);
+		Grupo grupo = grupoService.buscarOuFalhar(idGrupo);
+		
+		usuario.associarGrupo(grupo);
+	}
+
+	@Transactional
+	public void desassociarGrupo(Long idUsuario, Long idGrupo) {
+		Usuario usuario = buscarOuFalhar(idUsuario);
+		Grupo grupo = grupoService.buscarOuFalhar(idGrupo);
+		
+		usuario.desassociarGrupo(grupo);
+	}
+	
 	private void verificarEmailJaEmUso(Usuario usuario) {
 		Optional<Usuario> usuarioExistente = usuarioRepository.findByEmail(usuario.getEmail());
 		if(usuarioExistente.isPresent() && !usuarioExistente.get().equals(usuario)) {
@@ -67,4 +86,5 @@ public class UsuarioService {
 			throw new NegocioException("Senha atual informada não coincide com a senha do usuário.");
 		}
 	}
+
 }
