@@ -27,15 +27,15 @@ import com.algaworks.algafoodapi.domain.service.RestauranteService;
 
 @RestController
 @RequestMapping("/restaurantes/{idRestaurante}/produtos")
-public class ProdutoController {
+public class ProdutoRestauranteController {
 
-	private ProdutoRepository produtoRepository;
-	private ProdutoService produtoService;
-	private RestauranteService restauranteService;
-	private RepresentationModelAssemblerAndDisassembler representationModelAssemblerAndDisassembler;
+	private final ProdutoRepository produtoRepository;
+	private final ProdutoService produtoService;
+	private final RestauranteService restauranteService;
+	private final RepresentationModelAssemblerAndDisassembler representationModelAssemblerAndDisassembler;
 
 	@Autowired
-	public ProdutoController(ProdutoRepository produtoRepository, ProdutoService produtoService,
+	public ProdutoRestauranteController(ProdutoRepository produtoRepository, ProdutoService produtoService,
 			RestauranteService restauranteService,
 			RepresentationModelAssemblerAndDisassembler representationModelAssemblerAndDisassembler) {
 		this.produtoRepository = produtoRepository;

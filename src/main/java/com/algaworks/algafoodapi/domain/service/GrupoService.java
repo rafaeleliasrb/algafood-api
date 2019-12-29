@@ -7,16 +7,19 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.algaworks.algafoodapi.domain.exception.GrupoNaoEncotradoException;
 import com.algaworks.algafoodapi.domain.model.Grupo;
+import com.algaworks.algafoodapi.domain.model.Permissao;
 import com.algaworks.algafoodapi.domain.repository.GrupoRepository;
 
 @Service
 public class GrupoService {
 
-	private GrupoRepository grupoRepository;
+	private final GrupoRepository grupoRepository;
+	private final PermissaoService permissaoService;
 
 	@Autowired
-	public GrupoService(GrupoRepository grupoRepository) {
+	public GrupoService(GrupoRepository grupoRepository, PermissaoService permissaoService) {
 		this.grupoRepository = grupoRepository;
+		this.permissaoService = permissaoService;
 	}
 	
 	@Transactional
@@ -37,5 +40,21 @@ public class GrupoService {
 		} catch (EmptyResultDataAccessException e) {
 			throw new GrupoNaoEncotradoException(id);
 		}
+	}
+
+	@Transactional
+	public void atribuirPermissao(Long idGrupo, Long idPermissao) {
+		Grupo grupo = buscarOuFalhar(idGrupo);
+		Permissao permissao = permissaoService.buscarOuFalhar(idPermissao);
+		
+		grupo.atribuirPermissao(permissao);
+	}
+	
+	@Transactional
+	public void desatribuirPermissao(Long idGrupo, Long idPermissao) {
+		Grupo grupo = buscarOuFalhar(idGrupo);
+		Permissao permissao = permissaoService.buscarOuFalhar(idPermissao);
+		
+		grupo.desatribuirPermissao(permissao);
 	}
 }

@@ -70,6 +70,12 @@ insert into produto (nome, descricao, preco, ativo, restaurante_id) values ("Esp
 
 insert into permissao (id, nome, descricao) values (1, "CONSULTAR_COZINHAS", "Permite consultar cozinhas");
 insert into permissao (id, nome, descricao) values (2, "EDITAR_COZINHAS", "Permite editar cozinhas");
+insert into permissao (id, nome, descricao) values (3, "CONSULTAR_RESTAURANTES", "Permite consultar restaurantes");
+insert into permissao (id, nome, descricao) values (4, "EDITAR_RESTAURANTES", "Permite editar restaurantes");
+insert into permissao (id, nome, descricao) values (5, "CONSULTAR_CIDADES", "Permite consultar cidades");
+insert into permissao (id, nome, descricao) values (6, "EDITAR_CIDADES", "Permite editar cidades");
+insert into permissao (id, nome, descricao) values (7, "CONSULTAR_ESTADOS", "Permite consultar estados");
+insert into permissao (id, nome, descricao) values (8, "EDITAR_ESTADOS", "Permite editar estados");
 
 insert into grupo (id, nome) values (1, "Gerente");
 insert into grupo (id, nome) values (2, "Vendedor");
@@ -80,4 +86,7 @@ insert into usuario (id, nome, email, senha, data_cadastro) values (1, "João", 
 insert into usuario (id, nome, email, senha, data_cadastro) values (2, "Maria", "maria@email.com", "12345", utc_timestamp);
 insert into usuario (id, nome, email, senha, data_cadastro) values (3, "Raimunda", "raimunda@email.com", "12345", utc_timestamp);
 insert into usuario (id, nome, email, senha, data_cadastro) values (4, "Teresa", "teresa@email.com", "12345", utc_timestamp);
+
+insert into grupo_permissao (grupo_id, permissao_id) values (1, 1), (1, 2), (1, 3), (1, 4), (1, 5), (1, 6), (1, 7), (1, 8), 
+(2, 1), (2, 3), (2, 5), (2, 7), (3, 1), (3, 3), (3, 5), (3, 7), (4, 1), (4, 2), (4, 3), (4, 4), (4, 5), (4, 6), (4, 7), (4, 8);
 
