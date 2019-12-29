@@ -14,6 +14,7 @@ import com.algaworks.algafoodapi.domain.model.Cidade;
 import com.algaworks.algafoodapi.domain.model.Cozinha;
 import com.algaworks.algafoodapi.domain.model.FormaPagamento;
 import com.algaworks.algafoodapi.domain.model.Restaurante;
+import com.algaworks.algafoodapi.domain.model.Usuario;
 import com.algaworks.algafoodapi.domain.repository.CidadeRepository;
 import com.algaworks.algafoodapi.domain.repository.CozinhaRepository;
 import com.algaworks.algafoodapi.domain.repository.RestauranteRepository;
@@ -25,14 +26,17 @@ public class RestauranteService {
 	private final CozinhaRepository cozinhaRepository;
 	private final CidadeRepository cidadeRepository;
 	private final FormaPagamentoService formaPagamentoService;
+	private final UsuarioService usuarioService;
 
 	@Autowired
 	public RestauranteService(RestauranteRepository restauranteRepository, CozinhaRepository cozinhaRepository,
-			CidadeRepository cidadeRepository, FormaPagamentoService formaPagamentoService) {
+			CidadeRepository cidadeRepository, FormaPagamentoService formaPagamentoService, 
+			UsuarioService usuarioService) {
 		this.restauranteRepository = restauranteRepository;
 		this.cozinhaRepository = cozinhaRepository;
 		this.cidadeRepository = cidadeRepository;
 		this.formaPagamentoService = formaPagamentoService;
+		this.usuarioService = usuarioService;
 	}
 
 	@Transactional
@@ -101,6 +105,22 @@ public class RestauranteService {
 		Restaurante restaurante = buscarOuFalha(idRestaurante);
 		
 		restaurante.fechar();
+	}
+
+	@Transactional
+	public void adicionarResponsavel(Long idRestaurante, Long idResponsavel) {
+		Restaurante restaurante = buscarOuFalha(idRestaurante);
+		Usuario responsavel = usuarioService.buscarOuFalhar(idResponsavel);
+		
+		restaurante.adicionarResponsavel(responsavel);
+	}
+	
+	@Transactional
+	public void removerResponsavel(Long idRestaurante, Long idResponsavel) {
+		Restaurante restaurante = buscarOuFalha(idRestaurante);
+		Usuario responsavel = usuarioService.buscarOuFalhar(idResponsavel);
+		
+		restaurante.removerResponsavel(responsavel);
 	}
 	
 	private Cozinha cozinhaPorId(Long id) {
