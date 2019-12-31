@@ -41,6 +41,25 @@ public class PedidoController {
 		this.representationModelAssemblerAndDisassembler = representationModelAssemblerAndDisassembler;
 	}
 	
+//	@GetMapping
+//	MappingJacksonValue listar(@RequestParam(required = false) String campos) {
+//		List<PedidoResumoModel> pedidosModel = representationModelAssemblerAndDisassembler
+//				.toCollectionRepresentationModel(PedidoResumoModel.class, pedidoRepository.findAll());
+//		
+//		MappingJacksonValue pedidosWrapper = new MappingJacksonValue(pedidosModel);
+//		
+//		SimpleFilterProvider filterProvider = new SimpleFilterProvider();
+//		filterProvider.addFilter("pedidoFilter", SimpleBeanPropertyFilter.serializeAll());
+//		
+//		if(StringUtils.isNotBlank(campos)) {
+//			filterProvider.addFilter("pedidoFilter", SimpleBeanPropertyFilter.filterOutAllExcept(campos.split(",")));
+//		}
+//		
+//		pedidosWrapper.setFilters(filterProvider);
+//		
+//		return pedidosWrapper;
+//	}
+	
 	@GetMapping
 	List<PedidoResumoModel> listar() {
 		return representationModelAssemblerAndDisassembler
