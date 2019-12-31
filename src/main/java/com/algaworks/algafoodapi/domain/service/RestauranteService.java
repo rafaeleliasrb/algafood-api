@@ -81,7 +81,7 @@ public class RestauranteService {
 	@Transactional
 	public void desassociarFormaPagamento(Long idRestaurante, Long idFormaPagamento) {
 		Restaurante restaurante = buscarOuFalha(idRestaurante);
-		FormaPagamento formaPagamento = formaPagamentoService.buscarOuFalhar(idFormaPagamento);
+		FormaPagamento formaPagamento = formaPagamentoService.buscarOuFalharDeUmRestaurante(idFormaPagamento, restaurante);
 		
 		restaurante.removerFormaPagamento(formaPagamento);
 	}

@@ -4,7 +4,9 @@ import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -16,8 +18,11 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.PrePersist;
 
 import org.hibernate.annotations.CreationTimestamp;
+
+import com.algaworks.algafoodapi.domain.exception.NegocioException;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -31,6 +36,8 @@ public class Pedido {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
+	
+	private String codigo;
 	
 	private BigDecimal subtotal;
 	private BigDecimal taxaFrete;
@@ -47,7 +54,7 @@ public class Pedido {
 	private Endereco enderecoEntrega;
 	
 	@Enumerated(EnumType.STRING)
-	private StatusPedido status;
+	private StatusPedido status = StatusPedido.CRIADO;
 	
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(nullable = false)
@@ -61,6 +68,49 @@ public class Pedido {
 	@JoinColumn(name = "usuario_cliente_id", nullable = false)
 	private Usuario cliente;
 	
-	@OneToMany(mappedBy = "pedido")
+	@OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL)
 	private List<ItemPedido> itens = new ArrayList<>();
+
+	@PrePersist
+	private void inserirCodigo() {
+		setCodigo(UUID.randomUUID().toString());
+	}
+	
+	public void calcularValorTotal() {
+		getItens().forEach(ItemPedido::calcularPrecoTotal);
+		
+		//Outra versao do reduce
+		/* BigDecimal valorTotalDosItens = getItens().stream()
+				.reduce(BigDecimal.ZERO, 
+				(valorParcial, y) -> valorParcial.add(y.getPrecoTotal()), BigDecimal::add); */
+		BigDecimal valorTotalDosItens = getItens().stream()
+			.map(item -> item.getPrecoTotal())
+			.reduce(BigDecimal.ZERO, BigDecimal::add);
+		
+		this.subtotal = valorTotalDosItens;
+		this.valorTotal = valorTotalDosItens.add(getRestaurante().getTaxaFrete());
+	}
+
+	public void confirmar() {
+		setStatus(StatusPedido.CONFIRMADO);
+		setDataConfirmacao(OffsetDateTime.now());
+	}
+
+	public void entregar() {
+		setStatus(StatusPedido.ENTREGUE);
+		setDataEntrega(OffsetDateTime.now());
+	}
+
+	public void cancelar() {
+		setStatus(StatusPedido.CANCELADO);
+		setDataCancelamento(OffsetDateTime.now());
+	}
+	
+	private void setStatus(StatusPedido novoStatusPedido) {
+		if(novoStatusPedido.isNaoPermiteAlterarStatusPara(getStatus())) {
+			throw new NegocioException(String.format("Status do pedido de código %s não pode ser alterado de %s para %s", 
+					this.codigo, this.status.getDescricao(), novoStatusPedido.getDescricao()));
+		}
+		this.status = novoStatusPedido;
+	}
 }

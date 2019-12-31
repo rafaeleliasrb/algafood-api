@@ -9,12 +9,13 @@ import org.springframework.transaction.annotation.Transactional;
 import com.algaworks.algafoodapi.domain.exception.EntidadeEmUsoException;
 import com.algaworks.algafoodapi.domain.exception.FormaPagamentoNaoEncontradaException;
 import com.algaworks.algafoodapi.domain.model.FormaPagamento;
+import com.algaworks.algafoodapi.domain.model.Restaurante;
 import com.algaworks.algafoodapi.domain.repository.FormaPagamentoRepository;
 
 @Service
 public class FormaPagamentoService {
 
-	private FormaPagamentoRepository formaPagamentoRepository;
+	private final FormaPagamentoRepository formaPagamentoRepository;
 
 	@Autowired
 	public FormaPagamentoService(FormaPagamentoRepository formaPagamentoRepository) {
@@ -29,6 +30,12 @@ public class FormaPagamentoService {
 	public FormaPagamento buscarOuFalhar(Long id) {
 		return formaPagamentoRepository.findById(id)
 				.orElseThrow(() -> new FormaPagamentoNaoEncontradaException(id));
+	}
+	
+	public FormaPagamento buscarOuFalharDeUmRestaurante(Long idFormaPagamento, Restaurante restaurante) {
+		FormaPagamento formaPagamento = buscarOuFalhar(idFormaPagamento);
+		restaurante.validarFormaPagamentoAceita(formaPagamento);
+		return formaPagamento;
 	}
 	
 	@Transactional

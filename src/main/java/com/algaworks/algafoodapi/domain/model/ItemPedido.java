@@ -31,4 +31,8 @@ public class ItemPedido {
 	
 	@ManyToOne
 	private Pedido pedido;
+	
+	public void calcularPrecoTotal() {
+		this.precoTotal = produto.getPreco().multiply(BigDecimal.valueOf(getQuantidade()));
+	}
 }

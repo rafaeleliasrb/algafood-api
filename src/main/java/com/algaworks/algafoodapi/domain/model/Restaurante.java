@@ -22,6 +22,8 @@ import javax.persistence.OneToMany;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import com.algaworks.algafoodapi.domain.exception.FormaPagamentoDeUmRestauranteNaoEncontradaException;
+
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -109,5 +111,11 @@ public class Restaurante {
 
 	public boolean removerResponsavel(Usuario responsavel) {
 		return getResponsaveis().remove(responsavel);
+	}
+
+	public void validarFormaPagamentoAceita(FormaPagamento formaPagamento) {
+		if(!getFormasPagamento().contains(formaPagamento)) {
+			throw new FormaPagamentoDeUmRestauranteNaoEncontradaException(formaPagamento.getId(), getId());
+		}
 	}
 }
