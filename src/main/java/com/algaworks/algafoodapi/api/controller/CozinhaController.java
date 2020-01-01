@@ -6,6 +6,10 @@ import java.util.List;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -45,9 +49,13 @@ public class CozinhaController {
 	}
 	
 	@GetMapping(produces = {MediaType.APPLICATION_JSON_VALUE})
-	List<CozinhaModel> listar() {
-		return representationModelAssemblerAndDisassembler
-				.toCollectionRepresentationModel(CozinhaModel.class, cozinhaRepository.findAll());
+	Page<CozinhaModel> listar(@PageableDefault(size = 10) Pageable pageable) {
+		Page<Cozinha> cozinhas = cozinhaRepository.findAll(pageable);
+		
+		List<CozinhaModel> cozinhasModel = representationModelAssemblerAndDisassembler
+				.toCollectionRepresentationModel(CozinhaModel.class, cozinhas.getContent());
+		
+		return new PageImpl<>(cozinhasModel, pageable, cozinhas.getTotalElements());
 	}
 
 	@GetMapping(produces = {MediaType.APPLICATION_XML_VALUE})
