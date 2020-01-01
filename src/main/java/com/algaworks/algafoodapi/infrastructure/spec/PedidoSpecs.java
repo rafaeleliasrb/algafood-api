@@ -13,6 +13,8 @@ public class PedidoSpecs {
 
 	public static Specification<Pedido> usandoFiltro(PedidoFilter pedidoFilter) {
 		return (root, query, builder) -> {
+			//verificando se não é uma chamada automatica do spring feita na hora do count
+			//pois daria um erro com os fetch
 			if(Pedido.class.equals(query.getResultType())) {
 				root.fetch("restaurante").fetch("cozinha");
 				root.fetch("cliente");

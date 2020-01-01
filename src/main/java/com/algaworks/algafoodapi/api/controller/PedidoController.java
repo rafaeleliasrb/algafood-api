@@ -49,6 +49,7 @@ public class PedidoController {
 		this.representationModelAssemblerAndDisassembler = representationModelAssemblerAndDisassembler;
 	}
 	
+//	usando jsonFilter
 //	@GetMapping
 //	MappingJacksonValue listar(@RequestParam(required = false) String campos) {
 //		List<PedidoResumoModel> pedidosModel = representationModelAssemblerAndDisassembler
