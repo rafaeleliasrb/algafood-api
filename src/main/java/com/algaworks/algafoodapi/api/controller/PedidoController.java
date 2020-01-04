@@ -27,9 +27,9 @@ import com.algaworks.algafoodapi.api.model.input.PedidoInput;
 import com.algaworks.algafoodapi.core.data.PageableTranslator;
 import com.algaworks.algafoodapi.domain.exception.EntidadeNaoEncontradaException;
 import com.algaworks.algafoodapi.domain.exception.NegocioException;
+import com.algaworks.algafoodapi.domain.filter.PedidoFilter;
 import com.algaworks.algafoodapi.domain.model.Pedido;
 import com.algaworks.algafoodapi.domain.repository.PedidoRepository;
-import com.algaworks.algafoodapi.domain.repository.filter.PedidoFilter;
 import com.algaworks.algafoodapi.domain.service.PedidoService;
 import com.algaworks.algafoodapi.infrastructure.spec.PedidoSpecs;
 

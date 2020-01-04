@@ -1,8 +1,12 @@
 package com.algaworks.algafoodapi.api.exceptionhandler;
 
 import java.time.LocalDateTime;
+import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import javax.validation.ConstraintViolationException;
+import javax.validation.Path.Node;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.TypeMismatchException;
@@ -148,7 +152,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 		
 		return handleBeanValidationThrowed(ex, ex.getBindingResult(), headers, status, request);
 	}
-
+	
 	@ExceptionHandler(ValidacaoException.class)
 	public ResponseEntity<Object> handleValidacaoException(
 			ValidacaoException ex, WebRequest request) {
@@ -180,6 +184,38 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 				.build();
 		
 		return handleExceptionInternal(ex, problem, headers, status, request);
+	}
+	
+	@ExceptionHandler(ConstraintViolationException.class)
+	public ResponseEntity<Object> handleConstraintViolationException(
+			ConstraintViolationException ex, WebRequest request) {
+		HttpStatus status = HttpStatus.BAD_REQUEST;
+		List<Problem.Object> objects = ex.getConstraintViolations().stream()
+				.map(constraint -> {
+					StringBuilder name = new StringBuilder();
+					
+					Iterator<Node> iterator = constraint.getPropertyPath().iterator();
+					iterator.next();
+					
+					while (iterator.hasNext()) {
+						Node node = iterator.next();
+						name.append(node.getName());
+					}
+					
+					return Problem.Object.builder()
+						.name(name.toString())
+						.userMessage(constraint.getMessage())
+						.build();
+				})
+				.collect(Collectors.toList());
+		
+		String detail = MSM_ERRO_GENERICA_USUARIO_FINAL;
+		Problem problem = createProblemBuilder(status, ProblemType.DADOS_INVALIDOS, detail)
+				.userMessage(detail)
+				.objects(objects)
+				.build();
+		
+		return handleExceptionInternal(ex, problem, new HttpHeaders(), status, request);
 	}
 	
 	@ExceptionHandler(EntidadeNaoEncontradaException.class)
