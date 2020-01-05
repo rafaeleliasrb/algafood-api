@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Path.Node;
 
@@ -192,15 +193,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 		HttpStatus status = HttpStatus.BAD_REQUEST;
 		List<Problem.Object> objects = ex.getConstraintViolations().stream()
 				.map(constraint -> {
-					StringBuilder name = new StringBuilder();
-					
-					Iterator<Node> iterator = constraint.getPropertyPath().iterator();
-					iterator.next();
-					
-					while (iterator.hasNext()) {
-						Node node = iterator.next();
-						name.append(node.getName());
-					}
+					String name = extrairNomePropriedadeComErro(constraint);
 					
 					return Problem.Object.builder()
 						.name(name.toString())
@@ -216,6 +209,19 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 				.build();
 		
 		return handleExceptionInternal(ex, problem, new HttpHeaders(), status, request);
+	}
+
+	private String extrairNomePropriedadeComErro(ConstraintViolation<?> constraint) {
+		StringBuilder name = new StringBuilder();
+		
+		Iterator<Node> iterator = constraint.getPropertyPath().iterator();
+		iterator.next();
+		
+		while (iterator.hasNext()) {
+			Node node = iterator.next();
+			name.append(node.getName());
+		}
+		return name.toString();
 	}
 	
 	@ExceptionHandler(EntidadeNaoEncontradaException.class)
