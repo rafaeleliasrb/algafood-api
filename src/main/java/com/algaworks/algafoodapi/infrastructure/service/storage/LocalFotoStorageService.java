@@ -1,22 +1,24 @@
 package com.algaworks.algafoodapi.infrastructure.service.storage;
 
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.FileCopyUtils;
 
+import com.algaworks.algafoodapi.core.storage.StorageProperties;
 import com.algaworks.algafoodapi.domain.exception.StorageException;
 import com.algaworks.algafoodapi.domain.service.FotoStorageService;
 
-@Service
 public class LocalFotoStorageService implements FotoStorageService {
 
-	@Value("${algafood.storage.local.diretorio-fotos}")
-	private Path diretorioFotos;
+	private StorageProperties storageProperties;
 	
+	@Autowired
+	public LocalFotoStorageService(StorageProperties storageProperties) {
+		this.storageProperties = storageProperties;
+	}
+
 	@Override
 	public void armazenar(NovaFoto novaFoto) {
 		try {
@@ -40,18 +42,20 @@ public class LocalFotoStorageService implements FotoStorageService {
 	}
 	
 	@Override
-	public InputStream recuperar(String nomeArquivo) {
+	public FotoRecuperada recuperar(String nomeArquivo) {
 		Path caminhoArquivoExistente = getArquivoPath(nomeArquivo);
 		
 		try {
-			return Files.newInputStream(caminhoArquivoExistente);
+			return FotoRecuperada.builder()
+				.inputStream(Files.newInputStream(caminhoArquivoExistente))
+				.build();
 		} catch (Exception e) {
 			throw new StorageException("Não foi possível recuperar o arquivo.", e);
 		}
 	}
 
 	private Path getArquivoPath(String nomeArquivo) {
-		return diretorioFotos.resolve(nomeArquivo);
+		return storageProperties.getLocal().getDiretorioFotos().resolve(nomeArquivo);
 	}
 
 }
