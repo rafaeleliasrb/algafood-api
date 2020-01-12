@@ -86,7 +86,7 @@ insert into grupo (id, nome) values (2, "Vendedor");
 insert into grupo (id, nome) values (3, "Secretária");
 insert into grupo (id, nome) values (4, "Cadastrador");
 
-insert into usuario (id, nome, email, senha, data_cadastro) values (1, "João", "joao@email.com", "12345", utc_timestamp);
+insert into usuario (id, nome, email, senha, data_cadastro) values (1, "João", "rafael_elias007@hotmail.com", "12345", utc_timestamp);
 insert into usuario (id, nome, email, senha, data_cadastro) values (2, "Maria", "maria@email.com", "12345", utc_timestamp);
 insert into usuario (id, nome, email, senha, data_cadastro) values (3, "Raimunda", "raimunda@email.com", "12345", utc_timestamp);
 insert into usuario (id, nome, email, senha, data_cadastro) values (4, "Teresa", "teresa@email.com", "12345", utc_timestamp);

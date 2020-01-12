@@ -5,7 +5,6 @@ import java.net.URL;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.algaworks.algafoodapi.core.storage.StorageProperties;
-import com.algaworks.algafoodapi.domain.exception.StorageException;
 import com.algaworks.algafoodapi.domain.service.FotoStorageService;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
