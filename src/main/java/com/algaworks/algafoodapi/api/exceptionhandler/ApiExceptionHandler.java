@@ -1,6 +1,6 @@
 package com.algaworks.algafoodapi.api.exceptionhandler;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -309,14 +309,14 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 					.status(status.value())
 					.detail(status.getReasonPhrase())
 					.userMessage(MSM_ERRO_GENERICA_USUARIO_FINAL)
-					.timestamp(LocalDateTime.now())
+					.timestamp(OffsetDateTime.now())
 					.build();
 		} else if (body instanceof String) {
 			body = Problem.builder()
 					.status(status.value())
 					.detail((String) body)
 					.userMessage(MSM_ERRO_GENERICA_USUARIO_FINAL)
-					.timestamp(LocalDateTime.now())
+					.timestamp(OffsetDateTime.now())
 					.build();
 		}
 		
@@ -331,7 +331,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 				.type(problemType.getUri())
 				.title(problemType.getTitle())
 				.detail(detail)
-				.timestamp(LocalDateTime.now()); 
+				.timestamp(OffsetDateTime.now()); 
 	}
 
 	private String joinPath(List<Reference> path) {
