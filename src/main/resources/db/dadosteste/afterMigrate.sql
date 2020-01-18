@@ -42,9 +42,9 @@ INSERT INTO cidade (id, nome, estado_id) VALUES (2, "Aracati", 1);
 INSERT INTO cidade (id, nome, estado_id) VALUES (3, "São Paulo", 2);
 INSERT INTO cidade (id, nome, estado_id) VALUES (4, "Santos", 2);
 
-INSERT INTO forma_pagamento (id, descricao) VALUES (1, "Cartão de crédito");
-INSERT INTO forma_pagamento (id, descricao) VALUES (2, "Cartão de débito");
-INSERT INTO forma_pagamento (id, descricao) VALUES (3, "Dinheiro");
+INSERT INTO forma_pagamento (id, descricao, data_atualizacao) VALUES (1, "Cartão de crédito", utc_timestamp);
+INSERT INTO forma_pagamento (id, descricao, data_atualizacao) VALUES (2, "Cartão de débito", utc_timestamp);
+INSERT INTO forma_pagamento (id, descricao, data_atualizacao) VALUES (3, "Dinheiro", utc_timestamp);
 
 INSERT INTO restaurante (id, nome, taxa_frete, cozinha_id, data_cadastro, data_atualizacao, ativo, aberto, endereco_cidade_id, endereco_cep, endereco_logradouro, endereco_numero, endereco_bairro) VALUES (1, "Pé de fava", 10.50, 2, utc_timestamp, utc_timestamp, true, false, 1, "38400-999", "Rua João Pinheiro", "1000", "Centro");
 INSERT INTO restaurante (id, nome, taxa_frete, cozinha_id, data_cadastro, data_atualizacao, ativo, aberto) VALUES (2, "Era uma vez Chalezinho", 50.70, 1, utc_timestamp, utc_timestamp, true, false);

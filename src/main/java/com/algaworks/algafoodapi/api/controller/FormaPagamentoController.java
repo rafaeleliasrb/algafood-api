@@ -1,11 +1,14 @@
 package com.algaworks.algafoodapi.api.controller;
 
 import java.net.URI;
+import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -17,6 +20,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.request.ServletWebRequest;
+import org.springframework.web.filter.ShallowEtagHeaderFilter;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.algaworks.algafoodapi.api.assembler.RepresentationModelAssemblerAndDisassembler;
@@ -43,15 +48,52 @@ public class FormaPagamentoController {
 	}
 
 	@GetMapping
-	List<FormaPagamentoModel> listar() {
-		return assemblerAndDisassembler
+	ResponseEntity<List<FormaPagamentoModel>> listar() {
+		//desabilita o shallow ETag para conseguir fazer o Deep ETag
+		/*ShallowEtagHeaderFilter.disableContentCaching(request.getRequest());
+		
+		Optional<OffsetDateTime> dataAtualizacaoMaisRecente = repository.findDataAtualizacaoMaisRecente();
+
+		String eTag = "0";
+		if(dataAtualizacaoMaisRecente.isPresent()) {
+			eTag = String.valueOf(dataAtualizacaoMaisRecente.get().toEpochSecond());
+		}
+		
+		if(request.checkNotModified(eTag)) {
+			return null;
+		}*/
+		
+		
+		List<FormaPagamentoModel> formasPagamentoModel = assemblerAndDisassembler
 				.toCollectionRepresentationModel(FormaPagamentoModel.class, repository.findAll());
+		return ResponseEntity.ok()
+//				.cacheControl(CacheControl.maxAge(10, TimeUnit.SECONDS))
+//				.cacheControl(CacheControl.maxAge(10, TimeUnit.SECONDS).cachePrivate())
+				.cacheControl(CacheControl.maxAge(10, TimeUnit.SECONDS).cachePublic())
+//				.cacheControl(CacheControl.noCache())
+//				.cacheControl(CacheControl.noStore())
+				.body(formasPagamentoModel);
 	}
 	
 	@GetMapping("/{idFormaPagamento}")
-	FormaPagamentoModel buscar(@PathVariable Long idFormaPagamento) {
-		return assemblerAndDisassembler
+	ResponseEntity<FormaPagamentoModel> buscar(@PathVariable Long idFormaPagamento, ServletWebRequest request) {
+		//desabilita o shallow ETag para conseguir fazer o Deep ETag
+		ShallowEtagHeaderFilter.disableContentCaching(request.getRequest());
+		
+		OffsetDateTime dataAtualizacao = repository.findDataAtualizacaoById(idFormaPagamento);
+		
+		String eTag = String.valueOf(dataAtualizacao.toEpochSecond());
+		
+		if(request.checkNotModified(eTag)) {
+			return null;
+		}
+		
+		FormaPagamentoModel formaPagamentoModel = assemblerAndDisassembler
 				.toRepresentationModel(FormaPagamentoModel.class, service.buscarOuFalhar(idFormaPagamento));
+		return ResponseEntity.ok()
+				.cacheControl(CacheControl.maxAge(10, TimeUnit.SECONDS))
+				.eTag(eTag)
+				.body(formaPagamentoModel);
 	}
 	
 	@PostMapping
