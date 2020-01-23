@@ -11,6 +11,7 @@ import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.SmartValidator;
@@ -32,6 +33,7 @@ import com.algaworks.algafoodapi.api.assembler.RestauranteModelAssembler;
 import com.algaworks.algafoodapi.api.model.RestauranteModel;
 import com.algaworks.algafoodapi.api.model.input.RestauranteInput;
 import com.algaworks.algafoodapi.api.model.view.RestauranteView;
+import com.algaworks.algafoodapi.api.openapi.controller.RestauranteControllerOpenApi;
 import com.algaworks.algafoodapi.domain.exception.NegocioException;
 import com.algaworks.algafoodapi.domain.exception.RestauranteNaoEncontradoException;
 import com.algaworks.algafoodapi.domain.exception.ValidacaoException;
@@ -42,8 +44,8 @@ import com.algaworks.algafoodapi.domain.service.RestauranteService;
 import com.fasterxml.jackson.annotation.JsonView;
 
 @RestController
-@RequestMapping(value = "/restaurantes")
-public class RestauranteController {
+@RequestMapping(value = "/restaurantes", produces = MediaType.APPLICATION_JSON_VALUE)
+public class RestauranteController implements RestauranteControllerOpenApi {
 
 	private final RestauranteRepository restauranteRepository;
 	private final RestauranteService restauranteService;
@@ -67,13 +69,13 @@ public class RestauranteController {
 	
 	@JsonView({RestauranteView.Resumo.class})
 	@GetMapping
-	List<RestauranteModel> listar() {
+	public List<RestauranteModel> listar() {
 		return restauranteModelAssembler.toCollectionModel(restauranteRepository.findAll());
 	}
 	
 	@JsonView({RestauranteView.ApenasNome.class})
 	@GetMapping(params = "projecao=apenas-nome")
-	List<RestauranteModel> listarApenasNome() {
+	public List<RestauranteModel> listarApenasNome() {
 		return restauranteModelAssembler.toCollectionModel(restauranteRepository.findAll());
 	}
 	
@@ -101,12 +103,12 @@ public class RestauranteController {
 //	}
 	
 	@GetMapping(value = "/{id}")
-	RestauranteModel buscar(@PathVariable Long id) {
+	public RestauranteModel buscar(@PathVariable Long id) {
 		return restauranteModelAssembler.toModel(restauranteService.buscarOuFalha(id));
 	}
 	
 	@PostMapping
-	ResponseEntity<Object> adicionar(@RequestBody @Valid RestauranteInput restauranteInput) {
+	public ResponseEntity<Object> adicionar(@RequestBody @Valid RestauranteInput restauranteInput) {
 		Restaurante restaurante = restauranteInputAssemblerAndDisassembler.toDomainModel(restauranteInput);
 		
 		RestauranteModel restauranteNovo = restauranteModelAssembler
@@ -118,7 +120,7 @@ public class RestauranteController {
 	}
 	
 	@PutMapping(value = "{id}")
-	RestauranteModel atualizar(@PathVariable Long id, @RequestBody @Valid RestauranteInput restauranteInput) {
+	public RestauranteModel atualizar(@PathVariable Long id, @RequestBody @Valid RestauranteInput restauranteInput) {
 		Restaurante restauranteAtual = restauranteService.buscarOuFalha(id);
 		
 		if(restauranteAtual.getEndereco() != null) {
@@ -131,12 +133,12 @@ public class RestauranteController {
 	
 	@DeleteMapping("/{id}")
 	@ResponseStatus(value = HttpStatus.NO_CONTENT)
-	void remover(@PathVariable Long id) {
+	public void remover(@PathVariable Long id) {
 		restauranteService.remover(id);
 	}
 	
 	@PatchMapping("/{id}")
-	RestauranteModel atualizarParcial(@PathVariable Long id, @RequestBody Map<String, Object> camposOrigem,
+	public RestauranteModel atualizarParcial(@PathVariable Long id, @RequestBody Map<String, Object> camposOrigem,
 			HttpServletRequest request) {
 		RestauranteInput restauranteAtual = 
 				restauranteInputAssemblerAndDisassembler.toInput(restauranteService.buscarOuFalha(id));
@@ -148,31 +150,31 @@ public class RestauranteController {
 	
 	@PutMapping(value = "{idRestaurante}/ativo")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	void ativar(@PathVariable Long idRestaurante) {
+	public void ativar(@PathVariable Long idRestaurante) {
 		restauranteService.ativar(idRestaurante);
 	}
 	
 	@DeleteMapping(value = "{idRestaurante}/ativo")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	void inativar(@PathVariable Long idRestaurante) {
+	public void inativar(@PathVariable Long idRestaurante) {
 		restauranteService.inativar(idRestaurante);
 	}
 	
 	@PutMapping("/{idRestaurante}/abertura")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	void abrir(@PathVariable Long idRestaurante) {
+	public void abrir(@PathVariable Long idRestaurante) {
 		restauranteService.abrir(idRestaurante);
 	}
 	
 	@PutMapping("/{idRestaurante}/fechamento")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	void fechar(@PathVariable Long idRestaurante) {
+	public void fechar(@PathVariable Long idRestaurante) {
 		restauranteService.fechar(idRestaurante);
 	}
 	
 	@PutMapping("/ativacoes")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	void ativarMutiplos(@RequestBody List<Long> idsRestaurante) {
+	public void ativarMutiplos(@RequestBody List<Long> idsRestaurante) {
 		try {
 			restauranteService.ativar(idsRestaurante);
 		} catch (RestauranteNaoEncontradoException e) {
@@ -182,7 +184,7 @@ public class RestauranteController {
 	
 	@DeleteMapping("/ativacoes")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	void desativarMutiplos(@RequestBody List<Long> idsRestaurante) {
+	public void desativarMutiplos(@RequestBody List<Long> idsRestaurante) {
 		try {
 			restauranteService.desativar(idsRestaurante);
 		} catch (RestauranteNaoEncontradoException e) {
@@ -201,26 +203,26 @@ public class RestauranteController {
 
 	/* Endpoints extras */
 	@GetMapping("/buscar")
-	List<RestauranteModel> buscar(@RequestParam("nome") String nome, @RequestParam BigDecimal taxaFreteInicial, 
+	public List<RestauranteModel> buscar(@RequestParam("nome") String nome, @RequestParam BigDecimal taxaFreteInicial, 
 			@RequestParam BigDecimal taxaFreteFinal) {
 		return restauranteModelAssembler
 				.toCollectionModel(restauranteRepository.buscar(nome, taxaFreteInicial, taxaFreteFinal));
 	}
 	
 	@GetMapping("/buscar-com-criteria")
-	List<RestauranteModel> buscarComCriteria(String nome, BigDecimal taxaFreteInicial, BigDecimal taxaFreteFinal) {
+	public List<RestauranteModel> buscarComCriteria(String nome, BigDecimal taxaFreteInicial, BigDecimal taxaFreteFinal) {
 		return restauranteModelAssembler
 				.toCollectionModel(restauranteRepository.buscarComCriteria(nome, taxaFreteInicial, taxaFreteFinal));
 	}
 	
 	@GetMapping("/com-frete-gratis")
-	List<RestauranteModel> buscarComFreteGratis(String nome) {
+	public List<RestauranteModel> buscarComFreteGratis(String nome) {
 		return restauranteModelAssembler
 				.toCollectionModel(restauranteRepository.buscarComFreteGratis(nome));
 	}
 	
 	@GetMapping("/buscar-primeiro")
-	Optional<RestauranteModel> buscarPrimeiro() {
+	public Optional<RestauranteModel> buscarPrimeiro() {
 		return restauranteModelAssembler.toOptionalModel(restauranteRepository.buscarPrimeiro());
 	}
 }

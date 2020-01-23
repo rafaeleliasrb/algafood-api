@@ -10,6 +10,7 @@ import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,13 +28,14 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import com.algaworks.algafoodapi.api.assembler.RepresentationModelAssemblerAndDisassembler;
 import com.algaworks.algafoodapi.api.model.FormaPagamentoModel;
 import com.algaworks.algafoodapi.api.model.input.FormaPagamentoInput;
+import com.algaworks.algafoodapi.api.openapi.controller.FormaPagamentoControllerOpenApi;
 import com.algaworks.algafoodapi.domain.model.FormaPagamento;
 import com.algaworks.algafoodapi.domain.repository.FormaPagamentoRepository;
 import com.algaworks.algafoodapi.domain.service.FormaPagamentoService;
 
 @RestController
-@RequestMapping(value = "/formas-pagamento")
-public class FormaPagamentoController {
+@RequestMapping(value = "/formas-pagamento", produces = MediaType.APPLICATION_JSON_VALUE)
+public class FormaPagamentoController implements FormaPagamentoControllerOpenApi {
 
 	private final FormaPagamentoService service;
 	private final FormaPagamentoRepository repository;
@@ -48,22 +50,7 @@ public class FormaPagamentoController {
 	}
 
 	@GetMapping
-	ResponseEntity<List<FormaPagamentoModel>> listar() {
-		//desabilita o shallow ETag para conseguir fazer o Deep ETag
-		/*ShallowEtagHeaderFilter.disableContentCaching(request.getRequest());
-		
-		Optional<OffsetDateTime> dataAtualizacaoMaisRecente = repository.findDataAtualizacaoMaisRecente();
-
-		String eTag = "0";
-		if(dataAtualizacaoMaisRecente.isPresent()) {
-			eTag = String.valueOf(dataAtualizacaoMaisRecente.get().toEpochSecond());
-		}
-		
-		if(request.checkNotModified(eTag)) {
-			return null;
-		}*/
-		
-		
+	public ResponseEntity<List<FormaPagamentoModel>> listar() {
 		List<FormaPagamentoModel> formasPagamentoModel = assemblerAndDisassembler
 				.toCollectionRepresentationModel(FormaPagamentoModel.class, repository.findAll());
 		return ResponseEntity.ok()
@@ -76,7 +63,7 @@ public class FormaPagamentoController {
 	}
 	
 	@GetMapping("/{idFormaPagamento}")
-	ResponseEntity<FormaPagamentoModel> buscar(@PathVariable Long idFormaPagamento, ServletWebRequest request) {
+	public ResponseEntity<FormaPagamentoModel> buscar(@PathVariable Long idFormaPagamento, ServletWebRequest request) {
 		//desabilita o shallow ETag para conseguir fazer o Deep ETag
 		ShallowEtagHeaderFilter.disableContentCaching(request.getRequest());
 		
@@ -97,7 +84,7 @@ public class FormaPagamentoController {
 	}
 	
 	@PostMapping
-	ResponseEntity<FormaPagamentoModel> adicionar(@RequestBody @Valid FormaPagamentoInput formaPagamentoInput) {
+	public ResponseEntity<FormaPagamentoModel> adicionar(@RequestBody @Valid FormaPagamentoInput formaPagamentoInput) {
 		FormaPagamento formaPagamento = assemblerAndDisassembler
 				.toRepresentationModel(FormaPagamento.class, formaPagamentoInput);
 		
@@ -111,7 +98,7 @@ public class FormaPagamentoController {
 	}
 	
 	@PutMapping("/{idFormaPagamento}")
-	FormaPagamentoModel atualizar(@PathVariable Long idFormaPagamento, 
+	public FormaPagamentoModel atualizar(@PathVariable Long idFormaPagamento, 
 			@RequestBody @Valid FormaPagamentoInput formaPagamentoInput) {
 		FormaPagamento formaPagamentoAtual = service.buscarOuFalhar(idFormaPagamento);
 		
@@ -123,7 +110,7 @@ public class FormaPagamentoController {
 	
 	@DeleteMapping("/{idFormaPagamento}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	void remover(@PathVariable Long idFormaPagamento) {
+	public void remover(@PathVariable Long idFormaPagamento) {
 		service.remover(idFormaPagamento);
 	}
 }

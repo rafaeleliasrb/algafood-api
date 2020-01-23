@@ -11,6 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -24,6 +25,7 @@ import com.algaworks.algafoodapi.api.assembler.RepresentationModelAssemblerAndDi
 import com.algaworks.algafoodapi.api.model.PedidoModel;
 import com.algaworks.algafoodapi.api.model.PedidoResumoModel;
 import com.algaworks.algafoodapi.api.model.input.PedidoInput;
+import com.algaworks.algafoodapi.api.openapi.controller.PedidoControllerOpenApi;
 import com.algaworks.algafoodapi.core.data.PageableTranslator;
 import com.algaworks.algafoodapi.domain.exception.EntidadeNaoEncontradaException;
 import com.algaworks.algafoodapi.domain.exception.NegocioException;
@@ -34,8 +36,8 @@ import com.algaworks.algafoodapi.domain.service.PedidoService;
 import com.algaworks.algafoodapi.infrastructure.spec.PedidoSpecs;
 
 @RestController
-@RequestMapping("/pedidos")
-public class PedidoController {
+@RequestMapping(path = "/pedidos", produces = MediaType.APPLICATION_JSON_VALUE)
+public class PedidoController implements PedidoControllerOpenApi {
 
 	private final PedidoRepository pedidoRepository;
 	private final PedidoService pedidoService;
@@ -70,7 +72,7 @@ public class PedidoController {
 //	}
 	
 	@GetMapping
-	Page<PedidoResumoModel> pesquisar(PedidoFilter pedidoFilter, @PageableDefault(size = 10) Pageable pageable) {
+	public Page<PedidoResumoModel> pesquisar(PedidoFilter pedidoFilter, @PageableDefault(size = 10) Pageable pageable) {
 		pageable = traduzirPageable(pageable);
 		
 		Page<Pedido> pedidos = pedidoRepository.findAll(PedidoSpecs.usandoFiltro(pedidoFilter), pageable);
@@ -80,7 +82,7 @@ public class PedidoController {
 	}
 
 	@GetMapping("{codigoPedido}")
-	PedidoModel buscar(@PathVariable String codigoPedido) {
+	public PedidoModel buscar(@PathVariable String codigoPedido) {
 		Pedido pedido = pedidoService.buscarOuFalhar(codigoPedido);
 		
 		return representationModelAssemblerAndDisassembler
@@ -88,7 +90,7 @@ public class PedidoController {
 	}
 	
 	@PostMapping
-	ResponseEntity<PedidoModel> adicionar(@RequestBody @Valid PedidoInput pedidoInput) {
+	public ResponseEntity<PedidoModel> adicionar(@RequestBody @Valid PedidoInput pedidoInput) {
 		try {
 			Pedido pedido = representationModelAssemblerAndDisassembler
 					.toRepresentationModel(Pedido.class, pedidoInput);
