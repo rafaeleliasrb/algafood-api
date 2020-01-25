@@ -14,12 +14,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.algaworks.algafoodapi.api.assembler.RepresentationModelAssemblerAndDisassembler;
 import com.algaworks.algafoodapi.api.model.PermissaoModel;
+import com.algaworks.algafoodapi.api.openapi.controller.GrupoPermissaoControllerOpenApi;
 import com.algaworks.algafoodapi.domain.model.Grupo;
 import com.algaworks.algafoodapi.domain.service.GrupoService;
 
 @RestController
 @RequestMapping("/grupos/{idGrupo}/permissoes")
-public class GrupoPermissaoController {
+public class GrupoPermissaoController implements GrupoPermissaoControllerOpenApi {
 
 	private final GrupoService grupoService;
 	private final RepresentationModelAssemblerAndDisassembler representationModelAssemblerAndDisassembler;
@@ -32,7 +33,7 @@ public class GrupoPermissaoController {
 	}
 	
 	@GetMapping
-	List<PermissaoModel> listar(@PathVariable Long idGrupo) {
+	public List<PermissaoModel> listar(@PathVariable Long idGrupo) {
 		Grupo grupo = grupoService.buscarOuFalhar(idGrupo);
 		
 		return representationModelAssemblerAndDisassembler
@@ -41,13 +42,13 @@ public class GrupoPermissaoController {
 	
 	@PutMapping("/{idPermissao}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	void atribuir(@PathVariable Long idGrupo, @PathVariable Long idPermissao) {
+	public void atribuir(@PathVariable Long idGrupo, @PathVariable Long idPermissao) {
 		grupoService.atribuirPermissao(idGrupo, idPermissao);
 	}
 	
 	@DeleteMapping("/{idPermissao}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	void desatribuir(@PathVariable Long idGrupo, @PathVariable Long idPermissao) {
+	public void desatribuir(@PathVariable Long idGrupo, @PathVariable Long idPermissao) {
 		grupoService.desatribuirPermissao(idGrupo, idPermissao);
 	}
 }

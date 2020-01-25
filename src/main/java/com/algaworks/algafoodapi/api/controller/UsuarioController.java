@@ -23,13 +23,14 @@ import com.algaworks.algafoodapi.api.model.UsuarioModel;
 import com.algaworks.algafoodapi.api.model.input.SenhaInput;
 import com.algaworks.algafoodapi.api.model.input.UsuarioInput;
 import com.algaworks.algafoodapi.api.model.input.UsuarioSemSenhaInput;
+import com.algaworks.algafoodapi.api.openapi.controller.UsuarioControllerOpenApi;
 import com.algaworks.algafoodapi.domain.model.Usuario;
 import com.algaworks.algafoodapi.domain.repository.UsuarioRepository;
 import com.algaworks.algafoodapi.domain.service.UsuarioService;
 
 @RestController
 @RequestMapping("/usuarios")
-public class UsuarioController {
+public class UsuarioController implements UsuarioControllerOpenApi {
 
 	private final UsuarioRepository usuarioRepository;
 	private final UsuarioService usuarioService;
@@ -44,19 +45,19 @@ public class UsuarioController {
 	}
 	
 	@GetMapping
-	List<UsuarioModel> listar() {
+	public List<UsuarioModel> listar() {
 		return representationModelAssemblerAndDisassembler
 				.toCollectionRepresentationModel(UsuarioModel.class, usuarioRepository.findAll());
 	}
 	
 	@GetMapping("/{idUsuario}")
-	UsuarioModel buscar(@PathVariable Long idUsuario) {
+	public UsuarioModel buscar(@PathVariable Long idUsuario) {
 		return representationModelAssemblerAndDisassembler
 				.toRepresentationModel(UsuarioModel.class, usuarioService.buscarOuFalhar(idUsuario));
 	}
 	
 	@PostMapping
-	ResponseEntity<UsuarioModel> adicionar(@RequestBody @Valid UsuarioInput usuarioInput) {
+	public ResponseEntity<UsuarioModel> adicionar(@RequestBody @Valid UsuarioInput usuarioInput) {
 		Usuario usuario = representationModelAssemblerAndDisassembler
 				.toRepresentationModel(Usuario.class, usuarioInput);
 		
@@ -70,7 +71,7 @@ public class UsuarioController {
 	}
 	
 	@PutMapping("/{idUsuario}")
-	UsuarioModel atualizar(@PathVariable Long idUsuario, @RequestBody @Valid UsuarioSemSenhaInput usuarioSemSenhaInput) {
+	public UsuarioModel atualizar(@PathVariable Long idUsuario, @RequestBody @Valid UsuarioSemSenhaInput usuarioSemSenhaInput) {
 		Usuario usuarioAtual = usuarioService.buscarOuFalhar(idUsuario);
 		
 		representationModelAssemblerAndDisassembler.copyProperties(usuarioSemSenhaInput, usuarioAtual);
@@ -81,7 +82,7 @@ public class UsuarioController {
 	
 	@PutMapping("/{idUsuario}/senha")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	void alterarSenha(@PathVariable Long idUsuario, @RequestBody @Valid SenhaInput senhaInput) {
+	public void alterarSenha(@PathVariable Long idUsuario, @RequestBody @Valid SenhaInput senhaInput) {
 		usuarioService.alterarSenha(idUsuario, senhaInput.getSenhaAtual(), senhaInput.getNovaSenha());
 	}
 }

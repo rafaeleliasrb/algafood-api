@@ -4,6 +4,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 
+import com.algaworks.algafoodapi.api.exceptionhandler.Problem;
 import com.algaworks.algafoodapi.api.model.PedidoModel;
 import com.algaworks.algafoodapi.api.model.PedidoResumoModel;
 import com.algaworks.algafoodapi.api.model.input.PedidoInput;
@@ -22,22 +23,20 @@ public interface PedidoControllerOpenApi {
 
 	@ApiOperation("Pesquisa um pedido")
 	@ApiResponses({
-		@ApiResponse(code = 400, message = "Requisição inválida (erro do cliente)")
+		@ApiResponse(code = 400, message = "Requisição inválida (erro do cliente)", response = Problem.class)
 	})
 	@ApiImplicitParams({
 		@ApiImplicitParam(value = "Nomes de propriedades para filtra a resposta separados por vírgula",
 				name = "campos", paramType = "query", type = "string")
 	})
-	Page<PedidoResumoModel> pesquisar(
-			PedidoFilter pedidoFilter, 
-			Pageable pageable);
+	Page<PedidoResumoModel> pesquisar(PedidoFilter pedidoFilter, Pageable pageable);
 
 	@ApiOperation("Busca um pedido por Id")
 	@ApiResponses({
 		@ApiResponse(code = 404, message = "Pedido não encontrado")
 	})
 	PedidoModel buscar(
-			@ApiParam(example = "f229e133-2c0a-11ea-9866-d09466a32949", value = "Código de um pedido")
+			@ApiParam(example = "f229e133-2c0a-11ea-9866-d09466a32949", value = "Código de um pedido", required = true)
 			String codigoPedido);
 	
 	@ApiOperation("Insere um pedido")
@@ -45,6 +44,6 @@ public interface PedidoControllerOpenApi {
 		@ApiResponse(code = 201, message = "Pedido criado")
 	})
 	ResponseEntity<PedidoModel> adicionar(
-			@ApiParam(name = "corpo", value = "Representação de um pedido")
+			@ApiParam(name = "corpo", value = "Representação de um pedido", required = true)
 			PedidoInput pedidoInput);
 }

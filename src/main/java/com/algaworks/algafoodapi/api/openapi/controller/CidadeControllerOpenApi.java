@@ -26,7 +26,7 @@ public interface CidadeControllerOpenApi {
 			@ApiResponse(code = 404, message = "Cidade não encontrada", response = Problem.class)
 	})
 	CidadeModel buscar(
-			@ApiParam(value = "Id de uma cidade", example = "1")
+			@ApiParam(value = "Id de uma cidade", example = "1", required = true)
 			Long id);
 	
 	@ApiOperation("Insere uma cidade")
@@ -34,7 +34,7 @@ public interface CidadeControllerOpenApi {
 		@ApiResponse(code = 201, message = "Cidade criada")
 	})
 	ResponseEntity<CidadeModel> adicionar(
-			@ApiParam(name = "corpo", value = "Representação de uma cidade")
+			@ApiParam(name = "corpo", value = "Representação de uma cidade", required = true)
 			CidadeInput cidadeInput);
 	
 	@ApiOperation("Atualiza uma cidade por id")
@@ -43,10 +43,10 @@ public interface CidadeControllerOpenApi {
 		@ApiResponse(code = 404, message = "Cidade não encontrada", response = Problem.class)
 	})
 	CidadeModel atualizar(
-			@ApiParam(value = "Id de uma cidade", example = "1")
+			@ApiParam(value = "Id de uma cidade", example = "1", required = true)
 			Long id, 
 			
-			@ApiParam(name = "corpo", value = "Representação com os novos dados de uma cidade")
+			@ApiParam(name = "corpo", value = "Representação com os novos dados de uma cidade", required = true)
 			CidadeInput cidadeInput);
 	
 	@ApiOperation("Deleta uma cidade por id")
@@ -55,6 +55,6 @@ public interface CidadeControllerOpenApi {
 		@ApiResponse(code = 404, message = "Cidade não encontrada", response = Problem.class)
 	})
 	void remover(
-			@ApiParam(value = "Id de uma cidade", example = "1")
+			@ApiParam(value = "Id de uma cidade", example = "1", required = true)
 			Long id);
 }

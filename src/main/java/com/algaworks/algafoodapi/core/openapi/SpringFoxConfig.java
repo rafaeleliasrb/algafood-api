@@ -1,13 +1,20 @@
 package com.algaworks.algafoodapi.core.openapi;
 
+import java.io.File;
+import java.io.InputStream;
+import java.net.URI;
+import java.net.URL;
+import java.net.URLStreamHandler;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -66,6 +73,7 @@ public class SpringFoxConfig implements WebMvcConfigurer {
 				.globalResponseMessage(RequestMethod.POST, globalPostResponseMessage())
 				.globalResponseMessage(RequestMethod.PUT, globalPutResponseMessage())
 				.globalResponseMessage(RequestMethod.DELETE, globalDeleteResponseMessage())
+				.globalResponseMessage(RequestMethod.PATCH, globalPatchResponseMessage())
 //				.globalOperationParameters(Arrays.asList(
 //						new ParameterBuilder()
 //							.name("campos")
@@ -75,25 +83,30 @@ public class SpringFoxConfig implements WebMvcConfigurer {
 //							.build()
 //				))
 				.apiInfo(apiInfo())
-				.ignoredParameterTypes(ServletWebRequest.class, HttpServletRequest.class)
+				.ignoredParameterTypes(ServletWebRequest.class, HttpServletRequest.class, URI.class, URL.class,
+						File.class, InputStream.class, Resource.class, URLStreamHandler.class, Optional.class)
 //				.enableUrlTemplating(true)
 				.tags(new Tag("Cidades", "Gerencia as cidades"), 
 						new Tag("Grupos", "Gerencia os grupos"),
 						new Tag("Cozinhas", "Gerencia as cozinhas"),
 						new Tag("Pedidos", "Gerencia os pedidos"),
 						new Tag("Formas de pagamento", "Gerencia as formas de pagamento"),
-						new Tag("Restaurantes", "Gerencia os restaurantes"))
+						new Tag("Restaurantes", "Gerencia os restaurantes"),
+						new Tag("Estados", "Gerencia os estados"),
+						new Tag("Produtos", "Gerencia os produtos"),
+						new Tag("Usuarios", "Gerencia os usuários"),
+						new Tag("Estatisticas", "Gerencia as estatísticas"))
 				.additionalModels(typeResolver.resolve(Problem.class))
 				.directModelSubstitute(Pageable.class, PageableModelOpenApi.class)
 				//.directModelSubstitute(PedidoFilter.class, PedidoFilterOpenApi.class)
 				.alternateTypeRules(
 						AlternateTypeRules.newRule(
-						typeResolver.resolve(Page.class, CozinhaModel.class), 
-						CozinhasModelOpenApi.class))
+							typeResolver.resolve(Page.class, CozinhaModel.class), 
+							CozinhasModelOpenApi.class))
 				.alternateTypeRules(
 						AlternateTypeRules.newRule(
-						typeResolver.resolve(Page.class, PedidoResumoModel.class), 
-						PedidosResumoModelOpenApi.class));
+							typeResolver.resolve(Page.class, PedidoResumoModel.class), 
+							PedidosResumoModelOpenApi.class));
 	}
 	
 	private List<ResponseMessage> globalGetResponseMessage() {
@@ -168,6 +181,30 @@ public class SpringFoxConfig implements WebMvcConfigurer {
 				new ResponseMessageBuilder()
 					.code(HttpStatus.INTERNAL_SERVER_ERROR.value())
 					.message(INTERNAL_SERVER_ERROR_MSG_ERRO)
+					.responseModel(new ModelRef(PROBLEMA_MODEL_OPEN_API))
+					.build()
+			);
+	}
+	
+	private List<ResponseMessage> globalPatchResponseMessage() {
+		return Arrays.asList(
+				new ResponseMessageBuilder()
+					.code(HttpStatus.BAD_REQUEST.value())
+					.message(BAD_REQUEST_MSG_ERRO)
+					.responseModel(new ModelRef(PROBLEMA_MODEL_OPEN_API))
+					.build(),
+				new ResponseMessageBuilder()
+					.code(HttpStatus.INTERNAL_SERVER_ERROR.value())
+					.message(INTERNAL_SERVER_ERROR_MSG_ERRO)
+					.responseModel(new ModelRef(PROBLEMA_MODEL_OPEN_API))
+					.build(),
+				new ResponseMessageBuilder()
+					.code(HttpStatus.NOT_ACCEPTABLE.value())
+					.message(NOT_ACCEPTABLE_MSG_ERRO)
+					.build(),
+				new ResponseMessageBuilder()
+					.code(HttpStatus.UNSUPPORTED_MEDIA_TYPE.value())
+					.message(UNSUPPORTED_MEDIA_TYPE_MSG_ERRO)
 					.responseModel(new ModelRef(PROBLEMA_MODEL_OPEN_API))
 					.build()
 			);

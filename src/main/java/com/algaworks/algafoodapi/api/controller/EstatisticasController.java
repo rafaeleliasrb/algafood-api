@@ -2,17 +2,18 @@ package com.algaworks.algafoodapi.api.controller;
 
 import java.util.List;
 
+import javax.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.algaworks.algafoodapi.core.validation.Offset;
+import com.algaworks.algafoodapi.api.model.input.OffsetInput;
+import com.algaworks.algafoodapi.api.openapi.controller.EstatisticasControllerOpenApi;
 import com.algaworks.algafoodapi.domain.filter.VendaDiariaFilter;
 import com.algaworks.algafoodapi.domain.model.dto.VendaDiaria;
 import com.algaworks.algafoodapi.domain.service.VendaQueryService;
@@ -20,8 +21,7 @@ import com.algaworks.algafoodapi.domain.service.VendaReportService;
 
 @RestController
 @RequestMapping("/estatisticas")
-@Validated
-public class EstatisticasController {
+public class EstatisticasController implements EstatisticasControllerOpenApi {
 
 	private final VendaQueryService vendaQueryService;
 	private final VendaReportService vendaReportService;
@@ -33,15 +33,15 @@ public class EstatisticasController {
 	}
 	
 	@GetMapping(path = "vendas-diarias", produces = MediaType.APPLICATION_JSON_VALUE)
-	List<VendaDiaria> pesquisarVendasDiarias(VendaDiariaFilter filter, 
-			@RequestParam(required = false, defaultValue = "+00:00") @Offset String offset) {
-		return vendaQueryService.consultarVendasDiarias(filter, offset);
+	public List<VendaDiaria> pesquisarVendasDiarias(VendaDiariaFilter filter, 
+			@Valid OffsetInput offsetInput) {
+		return vendaQueryService.consultarVendasDiarias(filter, offsetInput.getOffset());
 	}
 	
 	@GetMapping(path = "vendas-diarias", produces = MediaType.APPLICATION_PDF_VALUE)
-	ResponseEntity<byte[]> pesquisarVendasDiariasPdf(VendaDiariaFilter filter, 
-			@RequestParam(required = false, defaultValue = "+00:00") @Offset String offset) {
-		byte[] report = vendaReportService.emitirVendasDiarias(filter, offset);
+	public ResponseEntity<byte[]> pesquisarVendasDiariasPdf(VendaDiariaFilter filter, 
+			@Valid OffsetInput offsetInput) {
+		byte[] report = vendaReportService.emitirVendasDiarias(filter, offsetInput.getOffset());
 		
 		HttpHeaders headers = new HttpHeaders();
 		headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=vendas-diarias.pdf");

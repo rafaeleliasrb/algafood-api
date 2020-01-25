@@ -7,6 +7,7 @@ import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,13 +23,14 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import com.algaworks.algafoodapi.api.assembler.RepresentationModelAssemblerAndDisassembler;
 import com.algaworks.algafoodapi.api.model.EstadoModel;
 import com.algaworks.algafoodapi.api.model.input.EstadoInput;
+import com.algaworks.algafoodapi.api.openapi.controller.EstadoControllerOpenApi;
 import com.algaworks.algafoodapi.domain.model.Estado;
 import com.algaworks.algafoodapi.domain.repository.EstadoRepository;
 import com.algaworks.algafoodapi.domain.service.EstadoService;
 
 @RestController
-@RequestMapping(value = "estados")
-public class EstadoController {
+@RequestMapping(path = "estados", produces = MediaType.APPLICATION_JSON_VALUE)
+public class EstadoController implements EstadoControllerOpenApi {
 
 	private final EstadoRepository estadoRepository;
 	private final EstadoService estadoService;
@@ -43,19 +45,19 @@ public class EstadoController {
 	}
 	
 	@GetMapping
-	List<EstadoModel> listar() {
+	public List<EstadoModel> listar() {
 		return representationModelAssemblerAndDisassembler
 				.toCollectionRepresentationModel(EstadoModel.class, estadoRepository.findAll()) ;
 	}
 	
 	@GetMapping("/{id}")
-	EstadoModel buscar(@PathVariable Long id) {
+	public EstadoModel buscar(@PathVariable Long id) {
 		return representationModelAssemblerAndDisassembler
 				.toRepresentationModel(EstadoModel.class, estadoService.buscarOuFalhar(id));
 	}
 	
 	@PostMapping
-	ResponseEntity<EstadoModel> adicionar(@RequestBody @Valid EstadoInput estadoInput) {
+	public ResponseEntity<EstadoModel> adicionar(@RequestBody @Valid EstadoInput estadoInput) {
 		Estado estado = representationModelAssemblerAndDisassembler
 				.toRepresentationModel(Estado.class, estadoInput);
 		
@@ -68,7 +70,7 @@ public class EstadoController {
 	}
 	
 	@PutMapping("/{id}")
-	EstadoModel atualizar(@PathVariable Long id, @RequestBody @Valid EstadoInput estadoInput) {
+	public EstadoModel atualizar(@PathVariable Long id, @RequestBody @Valid EstadoInput estadoInput) {
 		Estado estadoAtual = estadoService.buscarOuFalhar(id);
 		
 		representationModelAssemblerAndDisassembler.copyProperties(estadoInput, estadoAtual);
@@ -79,7 +81,7 @@ public class EstadoController {
 	
 	@DeleteMapping("/{id}")
 	@ResponseStatus(value = HttpStatus.NO_CONTENT)
-	void remover(@PathVariable Long id) {
+	public void remover(@PathVariable Long id) {
 		estadoService.remover(id);
 	}
 }

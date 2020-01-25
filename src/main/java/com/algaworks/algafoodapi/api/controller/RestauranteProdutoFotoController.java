@@ -18,12 +18,15 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.algaworks.algafoodapi.api.assembler.RepresentationModelAssemblerAndDisassembler;
 import com.algaworks.algafoodapi.api.model.FotoProdutoModel;
 import com.algaworks.algafoodapi.api.model.input.FotoProdutoInput;
+import com.algaworks.algafoodapi.api.openapi.controller.RestauranteProdutoFotoControllerOpenApi;
 import com.algaworks.algafoodapi.domain.exception.EntidadeNaoEncontradaException;
 import com.algaworks.algafoodapi.domain.model.FotoProduto;
 import com.algaworks.algafoodapi.domain.model.Produto;
@@ -35,8 +38,9 @@ import com.algaworks.algafoodapi.domain.service.ProdutoService;
 import com.algaworks.algafoodapi.domain.service.RestauranteService;
 
 @RestController
-@RequestMapping("/restaurantes/{idRestaurante}/produtos/{idProduto}/foto")
-public class RestauranteProdutoFotoController {
+@RequestMapping(path = "/restaurantes/{idRestaurante}/produtos/{idProduto}/foto",
+		produces = MediaType.APPLICATION_JSON_VALUE)
+public class RestauranteProdutoFotoController implements RestauranteProdutoFotoControllerOpenApi {
 
 	private final ProdutoService produtoService;
 	private final RestauranteService restauranteService;
@@ -56,39 +60,28 @@ public class RestauranteProdutoFotoController {
 	}
 
 	@PutMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-	FotoProdutoModel atualizarFoto(@PathVariable Long idRestaurante, @PathVariable Long idProduto,
-			@Valid FotoProdutoInput fotoProdutoInput) throws IOException {
+	public FotoProdutoModel atualizarFoto(@PathVariable Long idRestaurante, @PathVariable Long idProduto,
+			@Valid FotoProdutoInput fotoProdutoInput,
+			@RequestPart(required = true) MultipartFile arquivo) throws IOException {
 		Restaurante restaurante = restauranteService.buscarOuFalha(idRestaurante);
 		Produto produto = produtoService.buscarOuFalhar(idProduto, restaurante);
 		
-		FotoProduto fotoProduto = new FotoProduto();
-		fotoProduto.setId(produto.getId());
-		fotoProduto.setProduto(produto);
-		fotoProduto.setNomeArquivo(fotoProdutoInput.getArquivo().getOriginalFilename());
-		fotoProduto.setDescricao(fotoProdutoInput.getDescricao());
-		fotoProduto.setContentType(fotoProdutoInput.getArquivo().getContentType());
-		fotoProduto.setTamanho(fotoProdutoInput.getArquivo().getSize());
+		FotoProduto fotoProduto = criarFotoProduto(fotoProdutoInput, produto);
 		
 		return representationModelAssemblerAndDisassembler
 				.toRepresentationModel(FotoProdutoModel.class, fotoProdutoService.salvar(fotoProduto, 
 						fotoProdutoInput.getArquivo().getInputStream()));
 	}
 	
-	@GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-	FotoProdutoModel buscar(@PathVariable Long idRestaurante, @PathVariable Long idProduto) {
+	@GetMapping
+	public FotoProdutoModel buscar(@PathVariable Long idRestaurante, @PathVariable Long idProduto) {
 		FotoProduto fotoProduto = fotoProdutoService.buscarOuFalhar(idRestaurante, idProduto);
 		return representationModelAssemblerAndDisassembler
 				.toRepresentationModel(FotoProdutoModel.class, fotoProduto);
 	}
 	
-	@DeleteMapping
-	@ResponseStatus(HttpStatus.NO_CONTENT)
-	void remover(@PathVariable Long idRestaurante, @PathVariable Long idProduto) {
-		fotoProdutoService.excluir(idRestaurante, idProduto);
-	}
-	
-	@GetMapping
-	ResponseEntity<Object> servir(@PathVariable Long idRestaurante, @PathVariable Long idProduto,
+	@GetMapping(produces = MediaType.ALL_VALUE)
+	public ResponseEntity<Object> servir(@PathVariable Long idRestaurante, @PathVariable Long idProduto,
 			@RequestHeader(name = "accept") String acceptheader) throws HttpMediaTypeNotAcceptableException {
 		try {
 			FotoProduto fotoProduto = fotoProdutoService.buscarOuFalhar(idRestaurante, idProduto);
@@ -112,6 +105,23 @@ public class RestauranteProdutoFotoController {
 		} catch (EntidadeNaoEncontradaException e) {
 			return ResponseEntity.notFound().build();
 		}
+	}
+	
+	@DeleteMapping
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	public void remover(@PathVariable Long idRestaurante, @PathVariable Long idProduto) {
+		fotoProdutoService.excluir(idRestaurante, idProduto);
+	}
+	
+	private FotoProduto criarFotoProduto(FotoProdutoInput fotoProdutoInput, Produto produto) {
+		FotoProduto fotoProduto = new FotoProduto();
+		fotoProduto.setId(produto.getId());
+		fotoProduto.setProduto(produto);
+		fotoProduto.setNomeArquivo(fotoProdutoInput.getArquivo().getOriginalFilename());
+		fotoProduto.setDescricao(fotoProdutoInput.getDescricao());
+		fotoProduto.setContentType(fotoProdutoInput.getArquivo().getContentType());
+		fotoProduto.setTamanho(fotoProdutoInput.getArquivo().getSize());
+		return fotoProduto;
 	}
 
 	private void verificaCompatibilidadeMediaTypes(List<MediaType> mediaTypesAceitasPeloCliente,

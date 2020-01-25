@@ -6,6 +6,7 @@ import java.util.List;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,6 +21,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import com.algaworks.algafoodapi.api.assembler.RepresentationModelAssemblerAndDisassembler;
 import com.algaworks.algafoodapi.api.model.ProdutoModel;
 import com.algaworks.algafoodapi.api.model.input.ProdutoInput;
+import com.algaworks.algafoodapi.api.openapi.controller.RestauranteProdutoControllerOpenApi;
 import com.algaworks.algafoodapi.domain.model.Produto;
 import com.algaworks.algafoodapi.domain.model.Restaurante;
 import com.algaworks.algafoodapi.domain.repository.ProdutoRepository;
@@ -27,8 +29,8 @@ import com.algaworks.algafoodapi.domain.service.ProdutoService;
 import com.algaworks.algafoodapi.domain.service.RestauranteService;
 
 @RestController
-@RequestMapping("/restaurantes/{idRestaurante}/produtos")
-public class RestauranteProdutoController {
+@RequestMapping(path = "/restaurantes/{idRestaurante}/produtos", produces = MediaType.APPLICATION_JSON_VALUE)
+public class RestauranteProdutoController implements RestauranteProdutoControllerOpenApi {
 
 	private final ProdutoRepository produtoRepository;
 	private final ProdutoService produtoService;
@@ -46,7 +48,7 @@ public class RestauranteProdutoController {
 	}
 	
 	@GetMapping
-	List<ProdutoModel> listar(@PathVariable Long idRestaurante, @RequestParam(required = false) boolean incluirInativos) {
+	public List<ProdutoModel> listar(@PathVariable Long idRestaurante, @RequestParam(required = false) boolean incluirInativos) {
 		Restaurante restaurante = restauranteService.buscarOuFalha(idRestaurante);
 		List<Produto> produtos = null;
 		if(incluirInativos) {
@@ -60,7 +62,7 @@ public class RestauranteProdutoController {
 	}
 	
 	@GetMapping("/{idProduto}")
-	ProdutoModel buscar(@PathVariable Long idRestaurante, @PathVariable Long idProduto) {
+	public ProdutoModel buscar(@PathVariable Long idRestaurante, @PathVariable Long idProduto) {
 		Restaurante restaurante = restauranteService.buscarOuFalha(idRestaurante);
 		Produto produto = produtoService.buscarOuFalhar(idProduto, restaurante);
 		return representationModelAssemblerAndDisassembler
@@ -68,7 +70,7 @@ public class RestauranteProdutoController {
 	}
 	
 	@PostMapping
-	ResponseEntity<ProdutoModel> adicionar(@PathVariable Long idRestaurante, @RequestBody @Valid ProdutoInput produtoInput) {
+	public ResponseEntity<ProdutoModel> adicionar(@PathVariable Long idRestaurante, @RequestBody @Valid ProdutoInput produtoInput) {
 		Restaurante restaurante = restauranteService.buscarOuFalha(idRestaurante);
 		
 		Produto novoProduto = representationModelAssemblerAndDisassembler
@@ -82,7 +84,7 @@ public class RestauranteProdutoController {
 	}
 	
 	@PutMapping("/{idProduto}")
-	ProdutoModel atualizar(@PathVariable Long idRestaurante, @PathVariable Long idProduto, 
+	public ProdutoModel atualizar(@PathVariable Long idRestaurante, @PathVariable Long idProduto, 
 			@RequestBody @Valid ProdutoInput produtoInput) {
 		Restaurante restaurante = restauranteService.buscarOuFalha(idRestaurante);
 		Produto produtoAtual = produtoService.buscarOuFalhar(idProduto, restaurante);

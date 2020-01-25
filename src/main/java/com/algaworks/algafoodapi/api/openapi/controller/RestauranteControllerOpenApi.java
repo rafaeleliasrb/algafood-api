@@ -41,7 +41,7 @@ public interface RestauranteControllerOpenApi {
 		@ApiResponse(code = 404, message = "Restaurante não encontrado", response = Problem.class)
 	})
 	RestauranteModel buscar(
-			@ApiParam(example = "1", value = "Id de um restaurante")
+			@ApiParam(example = "1", value = "Id de um restaurante", required = true)
 			Long id);
 	
 	@ApiOperation("Insere um restaurante")
@@ -49,7 +49,7 @@ public interface RestauranteControllerOpenApi {
 		@ApiResponse(code = 201, message = "Restaurante adicionado")
 	})
 	ResponseEntity<Object> adicionar(
-			@ApiParam(name = "corpo", value = "Representação de um restaurante")
+			@ApiParam(name = "corpo", value = "Representação de um restaurante", required = true)
 			RestauranteInput restauranteInput);
 	
 	@ApiOperation("Atualiza um restaurante por Id")
@@ -58,10 +58,10 @@ public interface RestauranteControllerOpenApi {
 		@ApiResponse(code = 404, message = "Restaurante não encontrado", response = Problem.class)
 	})
 	RestauranteModel atualizar(
-			@ApiParam(example = "1", value = "Id de um restaurante")
+			@ApiParam(example = "1", value = "Id de um restaurante", required = true)
 			Long id, 
 			
-			@ApiParam(name = "corpo", value = "Representação de um restaurante")
+			@ApiParam(name = "corpo", value = "Representação de um restaurante", required = true)
 			RestauranteInput restauranteInput);
 	
 	@ApiOperation("Remove um restaurante por Id")
@@ -70,7 +70,7 @@ public interface RestauranteControllerOpenApi {
 		@ApiResponse(code = 404, message = "Restaurante não encontrado", response = Problem.class)
 	})
 	void remover(
-			@ApiParam(example = "1", value = "Id de um restaurante")
+			@ApiParam(example = "1", value = "Id de um restaurante", required = true)
 			Long id);
 	
 	@ApiOperation("Atualiza um restaurante parcialmente")
@@ -78,8 +78,11 @@ public interface RestauranteControllerOpenApi {
 		@ApiResponse(code = 200, message = "Restaurante atualizado parcialmente"),
 		@ApiResponse(code = 404, message = "Restaurante não encontrado", response = Problem.class)
 	})
+	@ApiImplicitParams(
+	        @ApiImplicitParam(name = "campos", dataType = "RestauranteInput")
+	)
 	RestauranteModel atualizarParcial(
-			@ApiParam(example = "1", value = "Id de um restaurante")
+			@ApiParam(example = "1", value = "Id de um restaurante", required = true)
 			Long id, 
 			
 			@ApiParam(name = "campos", value = "Nomes e valores das propriedades a serem atualizadas")
@@ -93,7 +96,7 @@ public interface RestauranteControllerOpenApi {
 		@ApiResponse(code = 404, message = "Restaurante não encontrado", response = Problem.class)
 	})
 	void ativar(
-			@ApiParam(example = "1", value = "Id de um restaurante")
+			@ApiParam(example = "1", value = "Id de um restaurante", required = true)
 			Long idRestaurante);
 	
 	@ApiOperation("Inativa um restaurante")
@@ -102,7 +105,7 @@ public interface RestauranteControllerOpenApi {
 		@ApiResponse(code = 404, message = "Restaurante não encontrado", response = Problem.class)
 	})
 	void inativar(
-			@ApiParam(example = "1", value = "Id de um restaurante")
+			@ApiParam(example = "1", value = "Id de um restaurante", required = true)
 			Long idRestaurante);
 	
 	@ApiOperation("Abre um restaurante")
@@ -111,7 +114,7 @@ public interface RestauranteControllerOpenApi {
 		@ApiResponse(code = 404, message = "Restaurante não encontrado", response = Problem.class)
 	})
 	void abrir(
-			@ApiParam(example = "1", value = "Id de um restaurante")
+			@ApiParam(example = "1", value = "Id de um restaurante", required = true)
 			Long idRestaurante);
 	
 	@ApiOperation("Fecha um restaurante")
@@ -120,7 +123,7 @@ public interface RestauranteControllerOpenApi {
 		@ApiResponse(code = 404, message = "Restaurante não encontrado", response = Problem.class)
 	})
 	void fechar(
-			@ApiParam(example = "1", value = "Id de um restaurante")
+			@ApiParam(example = "1", value = "Id de um restaurante", required = true)
 			Long idRestaurante);
 	
 	@ApiOperation("Ativa uma lista de restaurantes")
@@ -129,7 +132,7 @@ public interface RestauranteControllerOpenApi {
 		@ApiResponse(code = 404, message = "Restaurante não encontrado", response = Problem.class)
 	})
 	void ativarMutiplos(
-			@ApiParam(example = "{1, 2}", value = "Ids de restaurantes")
+			@ApiParam(example = "{1, 2}", value = "Ids de restaurantes", required = true)
 			List<Long> idsRestaurante);
 	
 	@ApiOperation("Desativa uma lista de restaurantes")
@@ -138,13 +141,13 @@ public interface RestauranteControllerOpenApi {
 		@ApiResponse(code = 404, message = "Restaurante não encontrado", response = Problem.class)
 	})
 	void desativarMutiplos(
-			@ApiParam(example = "{1, 2}", value = "Ids de restaurantes")
+			@ApiParam(example = "{1, 2}", value = "Ids de restaurantes", required = true)
 			List<Long> idsRestaurante);
 
 	/* Endpoints extras */
-	@ApiOperation(value = "Busca restaurantes por parametros")
+	@ApiOperation(value = "Busca restaurantes por parâmetros")
 	@ApiResponses({
-		@ApiResponse(code = 400, message = "Requisição inválida (erro do cliente)"),
+		@ApiResponse(code = 400, message = "Requisição inválida (erro do cliente)", response = Problem.class),
 		@ApiResponse(code = 404, message = "Restaurante não encontrado", response = Problem.class)
 	})
 	List<RestauranteModel> buscar(
@@ -157,9 +160,9 @@ public interface RestauranteControllerOpenApi {
 			@ApiParam(example = "15.00", value = "Valor final da taxa frete")
 			BigDecimal taxaFreteFinal);
 	
-	@ApiOperation(value = "Busca restaurantes por parametros")
+	@ApiOperation(value = "Busca restaurantes por parâmetros")
 	@ApiResponses({
-		@ApiResponse(code = 400, message = "Requisição inválida (erro do cliente)"),
+		@ApiResponse(code = 400, message = "Requisição inválida (erro do cliente)", response = Problem.class),
 	})
 	List<RestauranteModel> buscarComCriteria(
 			@ApiParam(example = "Coco Bambu", value = "Nome de um restaurante")
@@ -173,9 +176,10 @@ public interface RestauranteControllerOpenApi {
 	
 	@ApiOperation("Busca restaurantes com frete gratis")
 	@ApiResponses({
-		@ApiResponse(code = 400, message = "Requisição inválida (erro do cliente)"),
+		@ApiResponse(code = 400, message = "Requisição inválida (erro do cliente)", response = Problem.class),
 	})
 	List<RestauranteModel> buscarComFreteGratis(
+			@ApiParam(example = "Coco Bambu", value = "Nome de um restaurante", required = true)
 			String nome);
 	
 	@ApiOperation("Busca o primeiro restaurante")

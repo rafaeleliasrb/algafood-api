@@ -14,12 +14,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.algaworks.algafoodapi.api.assembler.RepresentationModelAssemblerAndDisassembler;
 import com.algaworks.algafoodapi.api.model.UsuarioModel;
+import com.algaworks.algafoodapi.api.openapi.controller.RestauranteUsuarioResponsavelControllerOpenApi;
 import com.algaworks.algafoodapi.domain.model.Restaurante;
 import com.algaworks.algafoodapi.domain.service.RestauranteService;
 
 @RestController
 @RequestMapping("/restaurantes/{idRestaurante}/responsaveis")
-public class RestauranteUsuarioResponsavelController {
+public class RestauranteUsuarioResponsavelController implements RestauranteUsuarioResponsavelControllerOpenApi {
 
 	private final RestauranteService restauranteService;
 	private final RepresentationModelAssemblerAndDisassembler representationModelAssemblerAndDisassembler;
@@ -32,7 +33,7 @@ public class RestauranteUsuarioResponsavelController {
 	}
 	
 	@GetMapping
-	List<UsuarioModel> listar(@PathVariable Long idRestaurante) {
+	public List<UsuarioModel> listar(@PathVariable Long idRestaurante) {
 		Restaurante restaurante = restauranteService.buscarOuFalha(idRestaurante);
 		
 		return representationModelAssemblerAndDisassembler
@@ -41,13 +42,13 @@ public class RestauranteUsuarioResponsavelController {
 	
 	@PutMapping("/{idResponsavel}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	void adicionar(@PathVariable Long idRestaurante, @PathVariable Long idResponsavel) {
+	public void adicionar(@PathVariable Long idRestaurante, @PathVariable Long idResponsavel) {
 		restauranteService.adicionarResponsavel(idRestaurante, idResponsavel);
 	}
 	
 	@DeleteMapping("/{idResponsavel}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	void remover(@PathVariable Long idRestaurante, @PathVariable Long idResponsavel) {
+	public void remover(@PathVariable Long idRestaurante, @PathVariable Long idResponsavel) {
 		restauranteService.removerResponsavel(idRestaurante, idResponsavel);
 	}
 }

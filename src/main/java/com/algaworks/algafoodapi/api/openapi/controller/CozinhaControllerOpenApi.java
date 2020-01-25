@@ -31,7 +31,7 @@ public interface CozinhaControllerOpenApi {
 		@ApiResponse(code = 404, message = "Cozinha não encontrada", response = Problem.class)
 	})
 	CozinhaModel buscar(
-			@ApiParam(example = "1", value = "Id de uma cozinha") 
+			@ApiParam(example = "1", value = "Id de uma cozinha", required = true) 
 			Long id);
 	
 	@ApiOperation(value = "Insere uma cozinha")
@@ -39,7 +39,7 @@ public interface CozinhaControllerOpenApi {
 		@ApiResponse(code = 201, message = "Cozinha adicionada")
 	})
 	ResponseEntity<CozinhaModel> adicionar(
-			@ApiParam(name = "corpo", value = "Representação de uma cozinha") 
+			@ApiParam(name = "corpo", value = "Representação de uma cozinha", required = true) 
 			CozinhaInput cozinhaInput);
 	
 	
@@ -49,10 +49,10 @@ public interface CozinhaControllerOpenApi {
 		@ApiResponse(code = 404, message = "Cozinha não encontrada", response = Problem.class)
 	})
 	CozinhaModel atualizar(
-			@ApiParam(name = "corpo", value = "Representação com os novos dados de uma cozinha")
+			@ApiParam(name = "corpo", value = "Representação com os novos dados de uma cozinha", required = true)
 			CozinhaInput cozinhaInput,
 			
-			@ApiParam(example = "1", value = "Id de uma cozinha") 
+			@ApiParam(example = "1", value = "Id de uma cozinha", required = true) 
 			Long id);
 	
 	@ApiOperation(value = "Deleta uma cozinha pelo Id")
@@ -61,6 +61,6 @@ public interface CozinhaControllerOpenApi {
 		@ApiResponse(code = 404, message = "Cozinha não encontrada", response = Problem.class)
 	})
 	void remover(
-			@ApiParam(example = "1", value = "Id de uma cozinha") 
+			@ApiParam(example = "1", value = "Id de uma cozinha", required = true) 
 			Long id);
 }

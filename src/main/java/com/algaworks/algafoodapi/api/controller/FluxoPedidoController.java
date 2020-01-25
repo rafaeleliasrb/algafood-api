@@ -2,19 +2,21 @@ package com.algaworks.algafoodapi.api.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.algaworks.algafoodapi.api.openapi.controller.FluxoPedidoControllerOpenApi;
 import com.algaworks.algafoodapi.domain.service.FluxoPedidoService;
 
 @RestController
-@RequestMapping("pedidos/{codigoPedido}")
-public class FluxoPedidoController {
+@RequestMapping(path = "pedidos/{codigoPedido}", produces = MediaType.APPLICATION_JSON_VALUE)
+public class FluxoPedidoController implements FluxoPedidoControllerOpenApi {
 
-	private FluxoPedidoService fluxoPedidoService;
+	private final FluxoPedidoService fluxoPedidoService;
 	
 	@Autowired
 	public FluxoPedidoController(FluxoPedidoService fluxoPedidoService) {
@@ -23,19 +25,19 @@ public class FluxoPedidoController {
 
 	@PutMapping("/confirmacao")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	void confirmar(@PathVariable String codigoPedido) {
+	public void confirmar(@PathVariable String codigoPedido) {
 		fluxoPedidoService.confirmar(codigoPedido);
 	}
 	
 	@PutMapping("/entrega")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	void entregar(@PathVariable String codigoPedido) {
+	public void entregar(@PathVariable String codigoPedido) {
 		fluxoPedidoService.entregar(codigoPedido);
 	}
 	
 	@PutMapping("/cancelamento")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	void cancelar(@PathVariable String codigoPedido) {
+	public void cancelar(@PathVariable String codigoPedido) {
 		fluxoPedidoService.cancelar(codigoPedido);
 	}
 }

@@ -8,12 +8,12 @@ import lombok.Setter;
 @Setter
 public class UsuarioModel {
 
-	@ApiModelProperty(example = "1")
+	@ApiModelProperty(example = "1", position = 1)
 	private Long id;
 	
-	@ApiModelProperty(example = "José")
+	@ApiModelProperty(example = "José", position = 5)
 	private String nome;
 	
-	@ApiModelProperty(example = "jose@email.com")
+	@ApiModelProperty(example = "jose@email.com", position = 10)
 	private String email;
 }

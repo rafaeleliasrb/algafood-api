@@ -14,12 +14,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.algaworks.algafoodapi.api.assembler.RepresentationModelAssemblerAndDisassembler;
 import com.algaworks.algafoodapi.api.model.GrupoModel;
+import com.algaworks.algafoodapi.api.openapi.controller.UsuarioGrupoControllerOpenApi;
 import com.algaworks.algafoodapi.domain.model.Usuario;
 import com.algaworks.algafoodapi.domain.service.UsuarioService;
 
 @RestController
 @RequestMapping("usuarios/{idUsuario}/grupos")
-public class UsuarioGrupoController {
+public class UsuarioGrupoController implements UsuarioGrupoControllerOpenApi {
 
 	private final UsuarioService usuarioService;
 	private final RepresentationModelAssemblerAndDisassembler representationModelAssemblerAndDisassembler;
@@ -32,7 +33,7 @@ public class UsuarioGrupoController {
 	}
 	
 	@GetMapping
-	List<GrupoModel> listar(@PathVariable Long idUsuario) {
+	public List<GrupoModel> listar(@PathVariable Long idUsuario) {
 		Usuario usuario = usuarioService.buscarOuFalhar(idUsuario);
 		return representationModelAssemblerAndDisassembler
 				.toCollectionRepresentationModel(GrupoModel.class, usuario.getGrupos());
@@ -40,13 +41,13 @@ public class UsuarioGrupoController {
 	
 	@PutMapping("/{idGrupo}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	void associar(@PathVariable Long idUsuario, @PathVariable Long idGrupo) {
+	public void associar(@PathVariable Long idUsuario, @PathVariable Long idGrupo) {
 		usuarioService.associarGrupo(idUsuario, idGrupo);
 	}
 	
 	@DeleteMapping("/{idGrupo}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	void desassociar(@PathVariable Long idUsuario, @PathVariable Long idGrupo) {
+	public void desassociar(@PathVariable Long idUsuario, @PathVariable Long idGrupo) {
 		usuarioService.desassociarGrupo(idUsuario, idGrupo);
 	}
 }
