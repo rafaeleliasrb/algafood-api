@@ -1,4 +1,14 @@
 {
 	"nome": "Deu sopa",
-	"taxaFrete": "13.20"
+	"taxaFrete": "13.20",
+	"endereco": {
+        "cep": "38400-999",
+        "logradouro": "Rua João Pinheiro",
+        "numero": "1000",
+        "complemento": null,
+        "bairro": "Centro",
+        "cidade": {
+            "id": 1
+        }
+    }
 }

@@ -1,17 +1,17 @@
 package com.algaworks.algafoodapi;
 
 import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.equalTo;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import com.algaworks.algafoodapi.domain.model.Cozinha;
 import com.algaworks.algafoodapi.domain.service.CozinhaService;
@@ -21,7 +21,7 @@ import com.algaworks.algafoodapi.util.ResourceUtils;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestPropertySource("/application-test.properties")
 public class CozinhaApiIT {
@@ -41,7 +41,7 @@ public class CozinhaApiIT {
 	private String cozinhaPernambucanaJson = ResourceUtils.getContentFromResource(PATH_COZINHA_PERNAMBUCANA_JSON);
 	private int quantidadeDeCozinhas;
 	
-	@Before
+	@BeforeEach
 	public void inicializar() {
 		RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
 		RestAssured.port = port;
@@ -68,7 +68,8 @@ public class CozinhaApiIT {
 		.when()
 			.get()
 		.then()
-			.body("", hasSize(quantidadeDeCozinhas));
+			.body("totalElements", equalTo(quantidadeDeCozinhas));
+			//.body("", hasSize(quantidadeDeCozinhas));
 	}
 	
 	@Test
