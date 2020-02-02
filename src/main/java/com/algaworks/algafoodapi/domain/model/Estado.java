@@ -21,4 +21,11 @@ public class Estado {
 	
 	@Column(nullable = false)
 	private String nome;
+	
+	@Deprecated
+	public Estado() {}
+
+	public Estado(String nome) {
+		this.nome = nome;
+	}
 }

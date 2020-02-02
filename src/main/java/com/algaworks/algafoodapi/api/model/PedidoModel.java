@@ -1,8 +1,17 @@
 package com.algaworks.algafoodapi.api.model;
 
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.hateoas.RepresentationModel;
+
+import com.algaworks.algafoodapi.api.controller.PedidoController;
+import com.algaworks.algafoodapi.domain.model.Pedido;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
@@ -10,7 +19,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class PedidoModel {
+public class PedidoModel extends RepresentationModel<PedidoModel> {
 
 	@ApiModelProperty(example = "f229e133-2c0a-11ea-9866-d09466a32949")
 	private String codigo;
@@ -48,4 +57,44 @@ public class PedidoModel {
 	private UsuarioModel cliente;
 	
 	private List<ItemPedidoModel> itens;
+	
+	public PedidoModel(Pedido pedido) {
+		RestauranteResumoModel restauranteResumoModel = new RestauranteResumoModel(pedido.getRestaurante());
+		EnderecoModel enderecoModel = new EnderecoModel(pedido.getEnderecoEntrega());
+		FormaPagamentoModel formaPagamentoModel = new FormaPagamentoModel(pedido.getFormaPagamento());
+		UsuarioModel usuarioModel = new UsuarioModel(pedido.getCliente());
+		List<ItemPedidoModel> itensPedidoModel = pedido.getItens().stream().map(ItemPedidoModel::new)
+				.collect(Collectors.toList());
+
+		this.codigo = pedido.getCodigo();
+		this.subtotal = pedido.getSubtotal();
+		this.taxaFrete = pedido.getTaxaFrete();
+		this.valorTotal = pedido.getValorTotal();
+		this.status = pedido.getStatus().getDescricao();
+		this.dataCriacao = pedido.getDataCriacao();
+		this.dataConfirmacao = pedido.getDataConfirmacao();
+		this.dataCancelamento = pedido.getDataCancelamento();
+		this.dataEntrega = pedido.getDataEntrega();
+		this.restaurante = restauranteResumoModel;
+		this.enderecoEntrega = enderecoModel;
+		this.formaPagamento = formaPagamentoModel;
+		this.cliente = usuarioModel;
+		this.itens = itensPedidoModel;
+	}
+	
+	public static PedidoModel criarPedidoModelComLinks(Pedido pedido) {
+		PedidoModel pedidoModel = new PedidoModel(pedido);
+		pedidoModel.add(linkTo(methodOn(PedidoController.class).buscar(pedidoModel.getCodigo())).withSelfRel());
+		pedidoModel.add(linkTo(PedidoController.class).withRel("pedidos"));
+		
+		pedidoModel.setRestaurante(RestauranteResumoModel.criarRestauranteResumoModelComLinks(pedido.getRestaurante()));
+		pedidoModel.setEnderecoEntrega(EnderecoModel.criarEnderecoModelComLinks(pedido.getEnderecoEntrega()));
+		pedidoModel.setFormaPagamento(FormaPagamentoModel.criarFormaPagamentoModelComLinks(pedido.getFormaPagamento()));
+		pedidoModel.setCliente(UsuarioModel.criarUsuarioModelComLinks(pedido.getCliente()));
+		pedidoModel.setItens(pedido.getItens().stream()
+				.map(item -> ItemPedidoModel.criarItemPedidoModelComLinks(item, pedido.getRestaurante().getId()))
+				.collect(Collectors.toList()));
+		
+		return pedidoModel;
+	}
 }

@@ -1,8 +1,10 @@
 package com.algaworks.algafoodapi.api.controller;
 
-import java.util.List;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.CollectionModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,7 +14,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.algaworks.algafoodapi.api.assembler.RepresentationModelAssemblerAndDisassembler;
 import com.algaworks.algafoodapi.api.model.UsuarioModel;
 import com.algaworks.algafoodapi.api.openapi.controller.RestauranteUsuarioResponsavelControllerOpenApi;
 import com.algaworks.algafoodapi.domain.model.Restaurante;
@@ -23,21 +24,19 @@ import com.algaworks.algafoodapi.domain.service.RestauranteService;
 public class RestauranteUsuarioResponsavelController implements RestauranteUsuarioResponsavelControllerOpenApi {
 
 	private final RestauranteService restauranteService;
-	private final RepresentationModelAssemblerAndDisassembler representationModelAssemblerAndDisassembler;
 
 	@Autowired
-	public RestauranteUsuarioResponsavelController(RestauranteService restauranteService,
-			RepresentationModelAssemblerAndDisassembler representationModelAssemblerAndDisassembler) {
+	public RestauranteUsuarioResponsavelController(RestauranteService restauranteService) {
 		this.restauranteService = restauranteService;
-		this.representationModelAssemblerAndDisassembler = representationModelAssemblerAndDisassembler;
 	}
 	
 	@GetMapping
-	public List<UsuarioModel> listar(@PathVariable Long idRestaurante) {
+	public CollectionModel<UsuarioModel> listar(@PathVariable Long idRestaurante) {
 		Restaurante restaurante = restauranteService.buscarOuFalha(idRestaurante);
 		
-		return representationModelAssemblerAndDisassembler
-				.toCollectionRepresentationModel(UsuarioModel.class, restaurante.getResponsaveis());
+		return UsuarioModel.criarCollectionUsuarioModelComLinks(restaurante.getResponsaveis())
+				.removeLinks()
+				.add(linkTo(methodOn(RestauranteUsuarioResponsavelController.class).listar(idRestaurante)).withSelfRel());
 	}
 	
 	@PutMapping("/{idResponsavel}")

@@ -44,6 +44,15 @@ public class Usuario {
 			inverseJoinColumns = @JoinColumn(name = "grupo_id"))
 	private Set<Grupo> grupos = new HashSet<>();
 
+	@Deprecated
+	public Usuario() {}
+	
+	public Usuario(String nome, String email, String senha) {
+		this.nome = nome;
+		this.email = email;
+		this.senha = senha;
+	}
+	
 	public boolean associarGrupo(Grupo grupo) {
 		return getGrupos().add(grupo);
 	}

@@ -1,14 +1,11 @@
 package com.algaworks.algafoodapi.api.controller;
 
-import java.net.URI;
-import java.util.List;
-
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.CollectionModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,16 +15,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import com.algaworks.algafoodapi.api.assembler.RepresentationModelAssemblerAndDisassembler;
 import com.algaworks.algafoodapi.api.model.CidadeModel;
 import com.algaworks.algafoodapi.api.model.input.CidadeInput;
 import com.algaworks.algafoodapi.api.openapi.controller.CidadeControllerOpenApi;
 import com.algaworks.algafoodapi.domain.model.Cidade;
-import com.algaworks.algafoodapi.domain.model.Estado;
 import com.algaworks.algafoodapi.domain.repository.CidadeRepository;
 import com.algaworks.algafoodapi.domain.service.CidadeService;
+import com.algaworks.algafoodapi.domain.service.EstadoService;
 
 @RestController
 @RequestMapping(path = "/cidades", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -35,53 +30,40 @@ public class CidadeController implements CidadeControllerOpenApi {
 
 	private final CidadeRepository cidadeRepository;
 	private final CidadeService cidadeService;
-	private final RepresentationModelAssemblerAndDisassembler representationModelAssemblerAndDisassembler;
+	private final EstadoService estadoService;
 
 	@Autowired
 	public CidadeController(CidadeRepository cidadeRepository, CidadeService cidadeService,
-			RepresentationModelAssemblerAndDisassembler representationModelAssemblerAndDisassembler) {
+			EstadoService estadoService) {
 		this.cidadeRepository = cidadeRepository;
 		this.cidadeService = cidadeService;
-		this.representationModelAssemblerAndDisassembler = representationModelAssemblerAndDisassembler;
+		this.estadoService = estadoService;
 	}
 	
 	@GetMapping
-	public List<CidadeModel> listar() {
-		return representationModelAssemblerAndDisassembler
-				.toCollectionRepresentationModel(CidadeModel.class, cidadeRepository.findAll());
+	public CollectionModel<CidadeModel> listar() {
+		return CidadeModel.criarCollectionCidadeModelComLinks(cidadeRepository.findAll());
 	}
 	
 	@GetMapping("/{id}")
 	public CidadeModel buscar(@PathVariable Long id) {
-		return representationModelAssemblerAndDisassembler
-				.toRepresentationModel(CidadeModel.class, cidadeService.buscarOuFalhar(id));
+		Cidade cidade = cidadeService.buscarOuFalhar(id);
+		return CidadeModel.criarCidadeModelComLinks(cidade);
 	}
 	
 	@PostMapping
-	public ResponseEntity<CidadeModel> adicionar(@RequestBody @Valid CidadeInput cidadeInput) {
-		Cidade cidade = representationModelAssemblerAndDisassembler
-				.toRepresentationModel(Cidade.class, cidadeInput);
+	@ResponseStatus(HttpStatus.CREATED)
+	public CidadeModel adicionar(@RequestBody @Valid CidadeInput cidadeInput) {
+		Cidade cidade = cidadeService.salvar(cidadeInput.novaCidade(estadoService));
 		
-		CidadeModel cidadeNova = representationModelAssemblerAndDisassembler
-				.toRepresentationModel(CidadeModel.class, cidadeService.salvar(cidade));
-		
-		URI cidadeUri = ServletUriComponentsBuilder.fromCurrentRequest()
-				.path("/{id}").buildAndExpand(cidade.getId()).toUri();
-		
-		return ResponseEntity.created(cidadeUri).body(cidadeNova);
+		return CidadeModel.criarCidadeModelComLinks(cidade);
 	}
 	
-	@PutMapping("/{id}")
-	public CidadeModel atualizar(@PathVariable Long id, @RequestBody @Valid CidadeInput cidadeInput) {
-		Cidade cidadeAtual = cidadeService.buscarOuFalhar(id);
+	@PutMapping("/{idCidade}")
+	public CidadeModel atualizar(@PathVariable Long idCidade, @RequestBody @Valid CidadeInput cidadeInput) {
+		Cidade cidadeAtualizada = cidadeInput.cidadeAtualizada(idCidade, cidadeService, estadoService);
 		
-		// Para evitar org.hibernate.HibernateException: identifier of an instance of 
-		// com.algaworks.algafood.domain.model.Cozinha was altered from 1 to 2
-		cidadeAtual.setEstado(new Estado());
-		
-		representationModelAssemblerAndDisassembler.copyProperties(cidadeInput, cidadeAtual);
-		return representationModelAssemblerAndDisassembler
-				.toRepresentationModel(CidadeModel.class, cidadeService.salvar(cidadeAtual));
+		return CidadeModel.criarCidadeModelComLinks(cidadeService.salvar(cidadeAtualizada));
 	}
 	
 	@DeleteMapping("/{id}")

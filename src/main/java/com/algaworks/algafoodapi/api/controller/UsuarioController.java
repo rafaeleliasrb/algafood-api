@@ -1,13 +1,10 @@
 package com.algaworks.algafoodapi.api.controller;
 
-import java.net.URI;
-import java.util.List;
-
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.CollectionModel;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,9 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import com.algaworks.algafoodapi.api.assembler.RepresentationModelAssemblerAndDisassembler;
 import com.algaworks.algafoodapi.api.model.UsuarioModel;
 import com.algaworks.algafoodapi.api.model.input.SenhaInput;
 import com.algaworks.algafoodapi.api.model.input.UsuarioInput;
@@ -34,50 +29,36 @@ public class UsuarioController implements UsuarioControllerOpenApi {
 
 	private final UsuarioRepository usuarioRepository;
 	private final UsuarioService usuarioService;
-	private final RepresentationModelAssemblerAndDisassembler representationModelAssemblerAndDisassembler;
 
 	@Autowired
-	public UsuarioController(UsuarioRepository usuarioRepository, UsuarioService usuarioService,
-			RepresentationModelAssemblerAndDisassembler representationModelAssemblerAndDisassembler) {
+	public UsuarioController(UsuarioRepository usuarioRepository, UsuarioService usuarioService) {
 		this.usuarioRepository = usuarioRepository;
 		this.usuarioService = usuarioService;
-		this.representationModelAssemblerAndDisassembler = representationModelAssemblerAndDisassembler;
 	}
 	
 	@GetMapping
-	public List<UsuarioModel> listar() {
-		return representationModelAssemblerAndDisassembler
-				.toCollectionRepresentationModel(UsuarioModel.class, usuarioRepository.findAll());
+	public CollectionModel<UsuarioModel> listar() {
+		return UsuarioModel.criarCollectionUsuarioModelComLinks(usuarioRepository.findAll());
 	}
 	
 	@GetMapping("/{idUsuario}")
 	public UsuarioModel buscar(@PathVariable Long idUsuario) {
-		return representationModelAssemblerAndDisassembler
-				.toRepresentationModel(UsuarioModel.class, usuarioService.buscarOuFalhar(idUsuario));
+		return UsuarioModel.criarUsuarioModelComLinks(usuarioService.buscarOuFalhar(idUsuario));
 	}
 	
 	@PostMapping
-	public ResponseEntity<UsuarioModel> adicionar(@RequestBody @Valid UsuarioInput usuarioInput) {
-		Usuario usuario = representationModelAssemblerAndDisassembler
-				.toRepresentationModel(Usuario.class, usuarioInput);
+	@ResponseStatus(HttpStatus.CREATED)
+	public UsuarioModel adicionar(@RequestBody @Valid UsuarioInput usuarioInput) {
+		Usuario usuario = usuarioInput.novoUsuario(); 
 		
-		UsuarioModel novoUsuario = representationModelAssemblerAndDisassembler
-				.toRepresentationModel(UsuarioModel.class, usuarioService.salvar(usuario));
-		
-		URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
-				.path("/{id}").buildAndExpand(novoUsuario.getId()).toUri();
-		
-		return ResponseEntity.created(uri).body(novoUsuario);
+		return UsuarioModel.criarUsuarioModelComLinks(usuarioService.salvar(usuario));
 	}
 	
 	@PutMapping("/{idUsuario}")
 	public UsuarioModel atualizar(@PathVariable Long idUsuario, @RequestBody @Valid UsuarioSemSenhaInput usuarioSemSenhaInput) {
-		Usuario usuarioAtual = usuarioService.buscarOuFalhar(idUsuario);
+		Usuario usuarioAtualizada = usuarioSemSenhaInput.usuarioAtualizado(idUsuario, usuarioService);
 		
-		representationModelAssemblerAndDisassembler.copyProperties(usuarioSemSenhaInput, usuarioAtual);
-		
-		return representationModelAssemblerAndDisassembler
-				.toRepresentationModel(UsuarioModel.class, usuarioService.salvar(usuarioAtual));
+		return UsuarioModel.criarUsuarioModelComLinks(usuarioService.salvar(usuarioAtualizada));
 	}
 	
 	@PutMapping("/{idUsuario}/senha")

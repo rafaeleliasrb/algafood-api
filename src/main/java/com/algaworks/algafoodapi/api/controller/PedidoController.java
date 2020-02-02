@@ -1,27 +1,26 @@
 package com.algaworks.algafoodapi.api.controller;
 
-import java.net.URI;
-import java.util.List;
 import java.util.Map;
 
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.PagedModel;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import com.algaworks.algafoodapi.api.assembler.RepresentationModelAssemblerAndDisassembler;
+import com.algaworks.algafoodapi.api.model.PedidoFactory;
 import com.algaworks.algafoodapi.api.model.PedidoModel;
 import com.algaworks.algafoodapi.api.model.PedidoResumoModel;
 import com.algaworks.algafoodapi.api.model.input.PedidoInput;
@@ -41,14 +40,17 @@ public class PedidoController implements PedidoControllerOpenApi {
 
 	private final PedidoRepository pedidoRepository;
 	private final PedidoService pedidoService;
-	private final RepresentationModelAssemblerAndDisassembler representationModelAssemblerAndDisassembler;
+	private final PagedResourcesAssembler<Pedido> pagedResourcesAssembler;
+	private final PedidoFactory pedidoFactory;
 
 	@Autowired
 	public PedidoController(PedidoRepository pedidoRepository, PedidoService pedidoService,
-			RepresentationModelAssemblerAndDisassembler representationModelAssemblerAndDisassembler) {
+			PagedResourcesAssembler<Pedido> pagedResourcesAssembler,
+			PedidoFactory pedidoFactory) {
 		this.pedidoRepository = pedidoRepository;
 		this.pedidoService = pedidoService;
-		this.representationModelAssemblerAndDisassembler = representationModelAssemblerAndDisassembler;
+		this.pagedResourcesAssembler = pagedResourcesAssembler;
+		this.pedidoFactory = pedidoFactory;
 	}
 	
 //	usando jsonFilter
@@ -72,36 +74,25 @@ public class PedidoController implements PedidoControllerOpenApi {
 //	}
 	
 	@GetMapping
-	public Page<PedidoResumoModel> pesquisar(PedidoFilter pedidoFilter, @PageableDefault(size = 10) Pageable pageable) {
+	public PagedModel<PedidoResumoModel> pesquisar(PedidoFilter pedidoFilter, @PageableDefault(size = 10) Pageable pageable) {
 		pageable = traduzirPageable(pageable);
-		
 		Page<Pedido> pedidos = pedidoRepository.findAll(PedidoSpecs.usandoFiltro(pedidoFilter), pageable);
-		List<PedidoResumoModel> pedidosModel = representationModelAssemblerAndDisassembler
-				.toCollectionRepresentationModel(PedidoResumoModel.class, pedidos.getContent());
-		return new PageImpl<>(pedidosModel, pageable, pedidos.getTotalElements());
+		
+		return pagedResourcesAssembler.toModel(pedidos, PedidoResumoModel::criarPedidoResumoModelComLinks);
 	}
 
 	@GetMapping("{codigoPedido}")
 	public PedidoModel buscar(@PathVariable String codigoPedido) {
-		Pedido pedido = pedidoService.buscarOuFalhar(codigoPedido);
-		
-		return representationModelAssemblerAndDisassembler
-				.toRepresentationModel(PedidoModel.class, pedido);
+		return PedidoModel.criarPedidoModelComLinks(pedidoService.buscarOuFalhar(codigoPedido));
 	}
 	
 	@PostMapping
-	public ResponseEntity<PedidoModel> adicionar(@RequestBody @Valid PedidoInput pedidoInput) {
+	@ResponseStatus(HttpStatus.CREATED)
+	public PedidoModel adicionar(@RequestBody @Valid PedidoInput pedidoInput) {
 		try {
-			Pedido pedido = representationModelAssemblerAndDisassembler
-					.toRepresentationModel(Pedido.class, pedidoInput);
+			Pedido pedido = pedidoFactory.novoPedido(pedidoInput);
 			
-			PedidoModel novoPedido = representationModelAssemblerAndDisassembler
-					.toRepresentationModel(PedidoModel.class, pedidoService.adicionarPedido(pedido));
-			
-			URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
-					.path("/{codigoPedido}").buildAndExpand(novoPedido.getCodigo()).toUri();
-			
-			return ResponseEntity.created(uri).body(novoPedido);
+			return PedidoModel.criarPedidoModelComLinks(pedidoService.adicionarPedido(pedido));
 		} catch (EntidadeNaoEncontradaException e) {
 			throw new NegocioException(e.getMessage(), e);
 		}

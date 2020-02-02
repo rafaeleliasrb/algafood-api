@@ -4,6 +4,10 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
+import com.algaworks.algafoodapi.domain.model.Cidade;
+import com.algaworks.algafoodapi.domain.model.Endereco;
+import com.algaworks.algafoodapi.domain.service.CidadeService;
+
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
@@ -34,4 +38,9 @@ public class EnderecoInput {
 	@Valid
 	@NotNull
 	private CidadeIdInput cidade;
+	
+	public Endereco endereco(CidadeService cidadeService) {
+		Cidade cidadeExistente = cidadeService.buscarOuFalhar(cidade.getId());
+		return new Endereco(cep, logradouro, numero, complemento, bairro, cidadeExistente);
+	}
 }

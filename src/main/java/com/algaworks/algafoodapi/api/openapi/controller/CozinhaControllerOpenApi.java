@@ -1,9 +1,8 @@
 package com.algaworks.algafoodapi.api.openapi.controller;
 
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 
 import com.algaworks.algafoodapi.api.exceptionhandler.Problem;
 import com.algaworks.algafoodapi.api.model.CozinhaModel;
@@ -20,7 +19,7 @@ import io.swagger.annotations.ApiResponses;
 public interface CozinhaControllerOpenApi {
 
 	@ApiOperation(value = "Lista cozinhas", produces = MediaType.APPLICATION_JSON_VALUE)
-	Page<CozinhaModel> listar(Pageable pageable);
+	PagedModel<CozinhaModel> listar(Pageable pageable);
 
 	@ApiOperation(value = "Lista cozinhas em XML", produces = MediaType.APPLICATION_XML_VALUE, hidden = true)
 	CozinhaXMLWrapper listarXML();
@@ -38,7 +37,7 @@ public interface CozinhaControllerOpenApi {
 	@ApiResponses({
 		@ApiResponse(code = 201, message = "Cozinha adicionada")
 	})
-	ResponseEntity<CozinhaModel> adicionar(
+	CozinhaModel adicionar(
 			@ApiParam(name = "corpo", value = "Representação de uma cozinha", required = true) 
 			CozinhaInput cozinhaInput);
 	

@@ -78,16 +78,31 @@ public class Pedido extends AbstractAggregateRoot<Pedido> {
 	private void inserirCodigo() {
 		setCodigo(UUID.randomUUID().toString());
 	}
+
+	@Deprecated
+	public Pedido() {}
 	
-	public void calcularValorTotal() {
-		getItens().forEach(ItemPedido::calcularPrecoTotal);
+	public Pedido(Endereco enderecoEntrega, FormaPagamento formaPagamento,
+			Restaurante restaurante, Usuario cliente, List<ItemPedido> itens) {
+		this.enderecoEntrega = enderecoEntrega;
+		this.formaPagamento = formaPagamento;
+		this.restaurante = restaurante;
+		this.cliente = cliente;
+		this.itens = itens;
 		
+		itens.stream().forEach(item -> item.setPedido(this));
+		
+		this.taxaFrete = restaurante.getTaxaFrete();
+		calcularValorTotal();
+	}
+	
+	private void calcularValorTotal() {
 		//Outra versao do reduce
 		/* BigDecimal valorTotalDosItens = getItens().stream()
 				.reduce(BigDecimal.ZERO, 
 				(valorParcial, y) -> valorParcial.add(y.getPrecoTotal()), BigDecimal::add); */
 		BigDecimal valorTotalDosItens = getItens().stream()
-			.map(item -> item.getPrecoTotal())
+			.map(ItemPedido::getPrecoTotal)
 			.reduce(BigDecimal.ZERO, BigDecimal::add);
 		
 		this.subtotal = valorTotalDosItens;

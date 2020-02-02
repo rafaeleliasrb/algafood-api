@@ -1,14 +1,24 @@
 package com.algaworks.algafoodapi.api.model;
 
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+
 import java.math.BigDecimal;
+
+import org.springframework.hateoas.RepresentationModel;
+import org.springframework.hateoas.server.core.Relation;
+
+import com.algaworks.algafoodapi.api.controller.RestauranteProdutoController;
+import com.algaworks.algafoodapi.domain.model.ItemPedido;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
 
+@Relation(collectionRelation = "itens")
 @Getter
 @Setter
-public class ItemPedidoModel {
+public class ItemPedidoModel extends RepresentationModel<ItemPedidoModel> {
 
 	@ApiModelProperty(example = "1")
 	private Long produtoId;
@@ -27,4 +37,22 @@ public class ItemPedidoModel {
 	
 	@ApiModelProperty(example = "Ao ponto")
 	private String observacao;
+
+	public ItemPedidoModel(ItemPedido itemPedido) {
+		this.produtoId = itemPedido.getProduto().getId();
+		this.produtoNome = itemPedido.getProduto().getNome();
+		this.quantidade = itemPedido.getQuantidade();
+		this.precoUnitario = itemPedido.getPrecoUnitario();
+		this.precoTotal = itemPedido.getPrecoTotal();
+		this.observacao = itemPedido.getObservacao();
+	}
+	
+	public static ItemPedidoModel criarItemPedidoModelComLinks(ItemPedido itemPedido, Long idRestaurante) {
+		ItemPedidoModel itemPedidoModel = new ItemPedidoModel(itemPedido);
+		
+		itemPedidoModel.add(linkTo(methodOn(RestauranteProdutoController.class)
+				.buscar(idRestaurante, itemPedidoModel.getProdutoId())).withRel("produto"));
+		
+		return itemPedidoModel;
+	}
 }

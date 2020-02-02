@@ -25,4 +25,12 @@ public class Cidade {
 	
 	@ManyToOne
 	private Estado estado;
+
+	@Deprecated
+	public Cidade() {}
+	
+	public Cidade(String nome, Estado estado) {
+		this.nome = nome;
+		this.estado = estado;
+	}
 }

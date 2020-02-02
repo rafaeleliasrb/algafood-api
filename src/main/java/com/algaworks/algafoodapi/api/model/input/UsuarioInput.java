@@ -3,6 +3,8 @@ package com.algaworks.algafoodapi.api.model.input;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 
+import com.algaworks.algafoodapi.domain.model.Usuario;
+
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
@@ -23,4 +25,8 @@ public class UsuarioInput {
 	@ApiModelProperty(example = "12345", required = true)
 	@NotBlank
 	private String senha;
+	
+	public Usuario novoUsuario() {
+		return new Usuario(nome, email, senha);
+	}
 }

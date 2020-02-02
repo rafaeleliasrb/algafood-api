@@ -1,14 +1,11 @@
 package com.algaworks.algafoodapi.api.controller;
 
-import java.net.URI;
-import java.util.List;
-
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.CollectionModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,9 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import com.algaworks.algafoodapi.api.assembler.RepresentationModelAssemblerAndDisassembler;
 import com.algaworks.algafoodapi.api.model.EstadoModel;
 import com.algaworks.algafoodapi.api.model.input.EstadoInput;
 import com.algaworks.algafoodapi.api.openapi.controller.EstadoControllerOpenApi;
@@ -34,49 +29,37 @@ public class EstadoController implements EstadoControllerOpenApi {
 
 	private final EstadoRepository estadoRepository;
 	private final EstadoService estadoService;
-	private final RepresentationModelAssemblerAndDisassembler representationModelAssemblerAndDisassembler;
 
 	@Autowired
-	public EstadoController(EstadoRepository estadoRepository, EstadoService estadoService,
-			RepresentationModelAssemblerAndDisassembler representationModelAssemblerAndDisassembler) {
+	public EstadoController(EstadoRepository estadoRepository, EstadoService estadoService) {
 		this.estadoRepository = estadoRepository;
 		this.estadoService = estadoService;
-		this.representationModelAssemblerAndDisassembler = representationModelAssemblerAndDisassembler;
 	}
 	
 	@GetMapping
-	public List<EstadoModel> listar() {
-		return representationModelAssemblerAndDisassembler
-				.toCollectionRepresentationModel(EstadoModel.class, estadoRepository.findAll()) ;
+	public CollectionModel<EstadoModel> listar() {
+		return EstadoModel.criarCollectorEstadoModelComLinks(estadoRepository.findAll());
 	}
 	
 	@GetMapping("/{id}")
 	public EstadoModel buscar(@PathVariable Long id) {
-		return representationModelAssemblerAndDisassembler
-				.toRepresentationModel(EstadoModel.class, estadoService.buscarOuFalhar(id));
+		return EstadoModel.criarEstadoModelComLinks(estadoService.buscarOuFalhar(id));
 	}
 	
 	@PostMapping
-	public ResponseEntity<EstadoModel> adicionar(@RequestBody @Valid EstadoInput estadoInput) {
-		Estado estado = representationModelAssemblerAndDisassembler
-				.toRepresentationModel(Estado.class, estadoInput);
+	@ResponseStatus(HttpStatus.CREATED)
+	public EstadoModel adicionar(@RequestBody @Valid EstadoInput estadoInput) {
+		Estado estado = estadoService.salvar(new Estado(estadoInput.getNome()));
 		
-		EstadoModel estadoNovo = representationModelAssemblerAndDisassembler
-				.toRepresentationModel(EstadoModel.class, estadoService.salvar(estado));
-		
-		URI estadoUri = ServletUriComponentsBuilder.fromCurrentRequest()
-				.path("/{id}").buildAndExpand(estadoNovo.getId()).toUri();
-		return ResponseEntity.created(estadoUri).body(estadoNovo);
+		return EstadoModel.criarEstadoModelComLinks(estado);
 	}
 	
 	@PutMapping("/{id}")
 	public EstadoModel atualizar(@PathVariable Long id, @RequestBody @Valid EstadoInput estadoInput) {
 		Estado estadoAtual = estadoService.buscarOuFalhar(id);
+		estadoAtual.setNome(estadoInput.getNome());
 		
-		representationModelAssemblerAndDisassembler.copyProperties(estadoInput, estadoAtual);
-		
-		return representationModelAssemblerAndDisassembler
-				.toRepresentationModel(EstadoModel.class, estadoService.salvar(estadoAtual));
+		return EstadoModel.criarEstadoModelComLinks(estadoService.salvar(estadoAtual));
 	}
 	
 	@DeleteMapping("/{id}")

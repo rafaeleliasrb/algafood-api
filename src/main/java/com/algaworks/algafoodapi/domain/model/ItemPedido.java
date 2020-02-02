@@ -32,7 +32,18 @@ public class ItemPedido {
 	@ManyToOne
 	private Pedido pedido;
 	
-	public void calcularPrecoTotal() {
+	@Deprecated
+	public ItemPedido() {}
+	
+	public ItemPedido(Integer quantidade, BigDecimal precoUnitario, Produto produto) {
+		this.quantidade = quantidade;
+		this.precoUnitario = precoUnitario;
+		this.produto = produto;
+		
+		calcularPrecoTotal();
+	}
+	
+	private void calcularPrecoTotal() {
 		this.precoTotal = produto.getPreco().multiply(BigDecimal.valueOf(getQuantidade()));
 	}
 }

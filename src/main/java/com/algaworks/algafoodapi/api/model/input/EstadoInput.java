@@ -13,4 +13,5 @@ public class EstadoInput {
 	@ApiModelProperty(example = "Ceará", required = true)
 	@NotBlank
 	private String nome;
+
 }

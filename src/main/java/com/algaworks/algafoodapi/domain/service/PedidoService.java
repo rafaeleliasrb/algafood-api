@@ -4,34 +4,29 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.algaworks.algafoodapi.domain.model.Cidade;
-import com.algaworks.algafoodapi.domain.model.FormaPagamento;
 import com.algaworks.algafoodapi.domain.model.Pedido;
-import com.algaworks.algafoodapi.domain.model.Produto;
-import com.algaworks.algafoodapi.domain.model.Restaurante;
-import com.algaworks.algafoodapi.domain.model.Usuario;
 import com.algaworks.algafoodapi.domain.repository.PedidoRepository;
 
 @Service
 public class PedidoService {
 
 	private final PedidoRepository pedidoRepository;
-	private final ProdutoService produtoService;
+	/*private final ProdutoService produtoService;
 	private final RestauranteService restauranteService;
 	private final FormaPagamentoService formaPagamentoService;
 	private final UsuarioService usuarioService;
-	private final CidadeService cidadeService;
+	private final CidadeService cidadeService;*/
 
 	@Autowired
-	public PedidoService(PedidoRepository pedidoRepository, ProdutoService produtoService,
+	public PedidoService(PedidoRepository pedidoRepository/*, ProdutoService produtoService,
 			RestauranteService restauranteService, FormaPagamentoService formaPagamentoService,
-			UsuarioService usuarioService, CidadeService cidadeService) {
+			UsuarioService usuarioService, CidadeService cidadeService*/) {
 		this.pedidoRepository = pedidoRepository;
-		this.produtoService = produtoService;
+		/*this.produtoService = produtoService;
 		this.restauranteService = restauranteService;
 		this.formaPagamentoService = formaPagamentoService;
 		this.usuarioService = usuarioService;
-		this.cidadeService = cidadeService;
+		this.cidadeService = cidadeService;*/
 	}
 	
 	public Pedido buscarOuFalhar(String codigoPedido) {
@@ -41,16 +36,16 @@ public class PedidoService {
 
 	@Transactional
 	public Pedido adicionarPedido(Pedido pedido) {
-			validarPedido(pedido);
+			/*validarPedido(pedido);
 			validarItensPedido(pedido);
 	
 			pedido.setTaxaFrete(pedido.getRestaurante().getTaxaFrete());
-			pedido.calcularValorTotal();
+			pedido.calcularValorTotal(); */
 			
 			return pedidoRepository.save(pedido);
 	}
 
-	private void validarItensPedido(Pedido pedido) {
+	/* private void validarItensPedido(Pedido pedido) {
 		pedido.getItens().forEach(item -> {
 			Produto produto = produtoService.buscarOuFalhar(item.getProduto().getId(), pedido.getRestaurante());
 			item.setPedido(pedido);
@@ -71,5 +66,5 @@ public class PedidoService {
 		pedido.setFormaPagamento(formaPagamento);
 		pedido.setCliente(cliente);
 		pedido.getEnderecoEntrega().setCidade(cidade);
-	}
+	} */
 }

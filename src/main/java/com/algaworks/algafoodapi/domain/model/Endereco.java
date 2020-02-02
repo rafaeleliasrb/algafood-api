@@ -30,4 +30,16 @@ public class Endereco {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "endereco_cidade_id")
 	private Cidade cidade;
+
+	@Deprecated
+	public Endereco() {}
+	
+	public Endereco(String cep, String logradouro, String numero, String complemento, String bairro, Cidade cidade) {
+		this.cep = cep;
+		this.logradouro = logradouro;
+		this.numero = numero;
+		this.complemento = complemento;
+		this.bairro = bairro;
+		this.cidade = cidade;
+	}
 }
