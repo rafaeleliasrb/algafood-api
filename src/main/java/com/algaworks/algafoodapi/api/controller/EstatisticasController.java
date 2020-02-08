@@ -1,10 +1,16 @@
 package com.algaworks.algafoodapi.api.controller;
 
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+
 import java.util.List;
 
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.Link;
+import org.springframework.hateoas.RepresentationModel;
+import org.springframework.hateoas.UriTemplate;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +18,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.algaworks.algafoodapi.api.model.TemplateVariableEnum;
 import com.algaworks.algafoodapi.api.model.input.OffsetInput;
 import com.algaworks.algafoodapi.api.openapi.controller.EstatisticasControllerOpenApi;
 import com.algaworks.algafoodapi.domain.filter.VendaDiariaFilter;
@@ -32,6 +39,18 @@ public class EstatisticasController implements EstatisticasControllerOpenApi {
 		this.vendaReportService = vendaReportService;
 	}
 	
+	@GetMapping
+	public EstatisticaModel estatisticas() {
+		EstatisticaModel estatisticaModel = new EstatisticaModel();
+		
+		String estatisticaUrl = linkTo(methodOn(EstatisticasController.class)
+				.pesquisarVendasDiarias(null, null)).toUri().toString();
+		estatisticaModel.add(new Link(UriTemplate.of(estatisticaUrl, TemplateVariableEnum.estatisticasVariables()), 
+				"vendas-diarias"));
+		
+		return estatisticaModel;
+	}
+	
 	@GetMapping(path = "vendas-diarias", produces = MediaType.APPLICATION_JSON_VALUE)
 	public List<VendaDiaria> pesquisarVendasDiarias(VendaDiariaFilter filter, 
 			@Valid OffsetInput offsetInput) {
@@ -50,5 +69,7 @@ public class EstatisticasController implements EstatisticasControllerOpenApi {
 				.contentType(MediaType.APPLICATION_PDF)
 				.headers(headers)
 				.body(report);
-	}	
+	}
+	
+	private static class EstatisticaModel extends RepresentationModel<EstatisticaModel> {}
 }

@@ -3,7 +3,6 @@ package com.algaworks.algafoodapi.api.model;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -23,42 +22,33 @@ import lombok.Setter;
 @Relation(collectionRelation = "restaurantes")
 @Getter
 @Setter
-public class RestauranteResumoModel extends RepresentationModel<RestauranteResumoModel> {
+public class RestauranteApenasNomeModel extends RepresentationModel<RestauranteApenasNomeModel> {
 
 	@ApiModelProperty(example = "1")
 	private Long id;
 	
 	@ApiModelProperty(example = "Coco Bambu")
 	private String nome;
-	
-	@ApiModelProperty(example = "10.00")
-	private BigDecimal taxaFrete;
-	
-	private CozinhaModel cozinha;
 
-	public RestauranteResumoModel(Restaurante restaurante) {
+	public RestauranteApenasNomeModel(Restaurante restaurante) {
 		this.id = restaurante.getId();
 		this.nome = restaurante.getNome();
-		this.taxaFrete = restaurante.getTaxaFrete();
-		this.cozinha = new CozinhaModel(restaurante.getCozinha());
 	}
 	
-	public static RestauranteResumoModel criarRestauranteResumoModelComLinks(Restaurante restaurante) {
-		RestauranteResumoModel restauranteResumoModel = new RestauranteResumoModel(restaurante);
+	public static RestauranteApenasNomeModel criarRestauranteApenasNomeModelComLinks(Restaurante restaurante) {
+		RestauranteApenasNomeModel restauranteResumoModel = new RestauranteApenasNomeModel(restaurante);
 		
 		restauranteResumoModel.add(linkTo(methodOn(RestauranteController.class).buscar(restaurante.getId())).withSelfRel());
 		restauranteResumoModel.add(new Link(UriTemplate.of(linkTo(RestauranteController.class).toUri().toString(), 
 				TemplateVariableEnum.projecaoVariables()), "restaurantes"));
 		
-		restauranteResumoModel.setCozinha(CozinhaModel.criarCozinhaModelComLinks(restaurante.getCozinha()));
-		
 		return restauranteResumoModel;
 	}
 	
-	public static CollectionModel<RestauranteResumoModel> criarCollectorRestauranteResumoModelComLinks(
+	public static CollectionModel<RestauranteApenasNomeModel> criarCollectorRestauranteApenasNomeModelComLinks(
 			List<Restaurante> restaurantes) {
-		CollectionModel<RestauranteResumoModel> collectionModel = new CollectionModel<>(restaurantes.stream()
-				.map(RestauranteResumoModel::criarRestauranteResumoModelComLinks)
+		CollectionModel<RestauranteApenasNomeModel> collectionModel = new CollectionModel<>(restaurantes.stream()
+				.map(RestauranteApenasNomeModel::criarRestauranteApenasNomeModelComLinks)
 				.collect(Collectors.toList()));
 		
 		collectionModel.add(new Link(UriTemplate.of(linkTo(RestauranteController.class).toUri().toString(), 

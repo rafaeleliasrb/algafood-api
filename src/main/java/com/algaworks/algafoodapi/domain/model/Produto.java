@@ -33,4 +33,14 @@ public class Produto {
 	@ManyToOne
 	@JoinColumn(nullable = false)
 	private Restaurante restaurante;
+
+	@Deprecated
+	public Produto() {}
+	
+	public Produto(String nome, String descricao, BigDecimal preco, Boolean ativo) {
+		this.nome = nome;
+		this.descricao = descricao;
+		this.preco = preco;
+		this.ativo = ativo;
+	}
 }

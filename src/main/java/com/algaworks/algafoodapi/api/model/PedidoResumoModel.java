@@ -6,9 +6,12 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 
+import org.springframework.hateoas.Link;
 import org.springframework.hateoas.RepresentationModel;
+import org.springframework.hateoas.UriTemplate;
 import org.springframework.hateoas.server.core.Relation;
 
+import com.algaworks.algafoodapi.api.controller.FluxoPedidoController;
 import com.algaworks.algafoodapi.api.controller.PedidoController;
 import com.algaworks.algafoodapi.domain.model.Pedido;
 
@@ -40,12 +43,12 @@ public class PedidoResumoModel extends RepresentationModel<PedidoResumoModel> {
 	@ApiModelProperty(example = "2020-01-21T23:15:22Z")
 	private OffsetDateTime dataCriacao;
 
-	private RestauranteResumoModel restaurante;
+	private RestauranteApenasNomeModel restaurante;
 	
 	private UsuarioModel cliente;
 
 	public PedidoResumoModel(Pedido pedido) {
-		RestauranteResumoModel restauranteResumoModel = new RestauranteResumoModel(pedido.getRestaurante());
+		RestauranteApenasNomeModel restauranteResumoModel = new RestauranteApenasNomeModel(pedido.getRestaurante());
 		UsuarioModel usuarioModel = new UsuarioModel(pedido.getCliente());
 
 		this.codigo = pedido.getCodigo();
@@ -61,9 +64,24 @@ public class PedidoResumoModel extends RepresentationModel<PedidoResumoModel> {
 	public static PedidoResumoModel criarPedidoResumoModelComLinks(Pedido pedido) {
 		PedidoResumoModel pedidoModel = new PedidoResumoModel(pedido);
 		pedidoModel.add(linkTo(methodOn(PedidoController.class).buscar(pedidoModel.getCodigo())).withSelfRel());
-		pedidoModel.add(linkTo(PedidoController.class).withRel("pedidos"));
 		
-		pedidoModel.setRestaurante(RestauranteResumoModel.criarRestauranteResumoModelComLinks(pedido.getRestaurante()));
+		pedidoModel.add(new Link(UriTemplate.of(linkTo(PedidoController.class).toUri().toString(), 
+				TemplateVariableEnum.pageVariables().concat(TemplateVariableEnum.filtroPedidoVariables())), "pedidos"));
+		
+		if(pedido.podeConfirmar()) {
+			pedidoModel.add(linkTo(methodOn(FluxoPedidoController.class)
+					.confirmar(pedidoModel.getCodigo())).withRel("confirmar"));
+		}
+		if(pedido.podeCancelar()) {
+			pedidoModel.add(linkTo(methodOn(FluxoPedidoController.class)
+					.cancelar(pedidoModel.getCodigo())).withRel("cancelar"));
+		}
+		if(pedido.podeEntregar()) {
+			pedidoModel.add(linkTo(methodOn(FluxoPedidoController.class)
+					.entregar(pedidoModel.getCodigo())).withRel("entregar"));
+		}
+		
+		pedidoModel.setRestaurante(RestauranteApenasNomeModel.criarRestauranteApenasNomeModelComLinks(pedido.getRestaurante()));
 		pedidoModel.setCliente(UsuarioModel.criarUsuarioModelComLinks(pedido.getCliente()));
 		
 		return pedidoModel;

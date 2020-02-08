@@ -1,14 +1,11 @@
 package com.algaworks.algafoodapi.api.controller;
 
-import java.net.URI;
-import java.util.List;
-
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.CollectionModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,9 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import com.algaworks.algafoodapi.api.assembler.RepresentationModelAssemblerAndDisassembler;
 import com.algaworks.algafoodapi.api.model.GrupoModel;
 import com.algaworks.algafoodapi.api.model.input.GrupoInput;
 import com.algaworks.algafoodapi.api.openapi.controller.GrupoControllerOpenApi;
@@ -34,49 +29,37 @@ public class GrupoController implements GrupoControllerOpenApi {
 
 	private final GrupoService grupoService;
 	private final GrupoRepository grupoRepository;
-	private final RepresentationModelAssemblerAndDisassembler representationModelAssemblerAndDisassembler;
 
 	@Autowired
-	public GrupoController(GrupoService grupoService, GrupoRepository grupoRepository,
-			RepresentationModelAssemblerAndDisassembler representationModelAssemblerAndDisassembler) {
+	public GrupoController(GrupoService grupoService, GrupoRepository grupoRepository) {
 		this.grupoService = grupoService;
 		this.grupoRepository = grupoRepository;
-		this.representationModelAssemblerAndDisassembler = representationModelAssemblerAndDisassembler;
 	}
 	
 	@GetMapping
-	public List<GrupoModel> listar() {
-		return representationModelAssemblerAndDisassembler
-				.toCollectionRepresentationModel(GrupoModel.class, grupoRepository.findAll());
+	public CollectionModel<GrupoModel> listar() {
+		return GrupoModel.criarCollectionGrupoModelComLinks(grupoRepository.findAll());
 	}
 	
 	@GetMapping("/{idGrupo}")
 	public GrupoModel buscar(@PathVariable Long idGrupo) {
-		return representationModelAssemblerAndDisassembler
-				.toRepresentationModel(GrupoModel.class, grupoService.buscarOuFalhar(idGrupo));
+		return GrupoModel.criarGrupoModelComLinks(grupoService.buscarOuFalhar(idGrupo));
 	}
 	
 	@PostMapping
-	public ResponseEntity<GrupoModel> adicionar(@RequestBody @Valid GrupoInput grupoInput) {
-		Grupo grupo = representationModelAssemblerAndDisassembler
-				.toRepresentationModel(Grupo.class, grupoInput);
-		GrupoModel grupoNovo = representationModelAssemblerAndDisassembler
-				.toRepresentationModel(GrupoModel.class, grupoService.salvar(grupo));
+	@ResponseStatus(HttpStatus.CREATED)
+	public GrupoModel adicionar(@RequestBody @Valid GrupoInput grupoInput) {
+		Grupo grupo = new Grupo(grupoInput.getNome());
 		
-		URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
-				.path("/{id}").buildAndExpand(grupoNovo.getId()).toUri();
-		
-		return ResponseEntity.created(uri).body(grupoNovo);
+		return GrupoModel.criarGrupoModelComLinks(grupoService.salvar(grupo));
 	}
 	
 	@PutMapping("/{idGrupo}")
 	public GrupoModel atualizar(@PathVariable Long idGrupo, @RequestBody @Valid GrupoInput grupoInput) {
 		Grupo grupoAtual = grupoService.buscarOuFalhar(idGrupo);
-
-		representationModelAssemblerAndDisassembler.copyProperties(grupoInput, grupoAtual);
+		grupoAtual.setNome(grupoInput.getNome());
 		
-		return representationModelAssemblerAndDisassembler
-				.toRepresentationModel(GrupoModel.class, grupoService.salvar(grupoAtual));
+		return GrupoModel.criarGrupoModelComLinks(grupoService.salvar(grupoAtual));
 	}
 	
 	@DeleteMapping("/{idGrupo}")

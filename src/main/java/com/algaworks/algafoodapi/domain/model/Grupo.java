@@ -26,6 +26,13 @@ public class Grupo {
 	
 	private String nome;
 	
+	@Deprecated
+	public Grupo() {}
+	
+	public Grupo(String nome) {
+		this.nome = nome;
+	}
+	
 	@ManyToMany
 	@JoinTable(name = "grupo_permissao", 
 			joinColumns = @JoinColumn(name = "grupo_id"),

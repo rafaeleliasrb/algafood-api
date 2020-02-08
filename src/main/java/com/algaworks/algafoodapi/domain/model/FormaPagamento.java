@@ -29,4 +29,11 @@ public class FormaPagamento {
 	@UpdateTimestamp
 	@Column(nullable = false)
 	private OffsetDateTime dataAtualizacao;
+
+	@Deprecated
+	public FormaPagamento() {}
+	
+	public FormaPagamento(String descricao) {
+		this.descricao = descricao;
+	}
 }

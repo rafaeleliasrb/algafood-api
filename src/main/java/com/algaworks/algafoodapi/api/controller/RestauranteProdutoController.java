@@ -1,13 +1,14 @@
 package com.algaworks.algafoodapi.api.controller;
 
-import java.net.URI;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,10 +16,9 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import com.algaworks.algafoodapi.api.assembler.RepresentationModelAssemblerAndDisassembler;
 import com.algaworks.algafoodapi.api.model.ProdutoModel;
 import com.algaworks.algafoodapi.api.model.input.ProdutoInput;
 import com.algaworks.algafoodapi.api.openapi.controller.RestauranteProdutoControllerOpenApi;
@@ -35,63 +35,54 @@ public class RestauranteProdutoController implements RestauranteProdutoControlle
 	private final ProdutoRepository produtoRepository;
 	private final ProdutoService produtoService;
 	private final RestauranteService restauranteService;
-	private final RepresentationModelAssemblerAndDisassembler representationModelAssemblerAndDisassembler;
 
 	@Autowired
 	public RestauranteProdutoController(ProdutoRepository produtoRepository, ProdutoService produtoService,
-			RestauranteService restauranteService,
-			RepresentationModelAssemblerAndDisassembler representationModelAssemblerAndDisassembler) {
+			RestauranteService restauranteService) {
 		this.produtoRepository = produtoRepository;
 		this.produtoService = produtoService;
 		this.restauranteService = restauranteService;
-		this.representationModelAssemblerAndDisassembler = representationModelAssemblerAndDisassembler;
 	}
 	
 	@GetMapping
-	public List<ProdutoModel> listar(@PathVariable Long idRestaurante, @RequestParam(required = false) boolean incluirInativos) {
+	public CollectionModel<ProdutoModel> listar(@PathVariable Long idRestaurante, 
+			@RequestParam(required = false) Boolean incluirInativos) {
 		Restaurante restaurante = restauranteService.buscarOuFalha(idRestaurante);
-		List<Produto> produtos = null;
-		if(incluirInativos) {
-			produtos = produtoRepository.findByRestaurante(restaurante);
-		}
-		else {
-			produtos = produtoRepository.findAtivosByRestaurante(restaurante);
-		}
-		return representationModelAssemblerAndDisassembler
-				.toCollectionRepresentationModel(ProdutoModel.class, produtos);
+		
+		List<Produto> produtos = produtoRepository.findByRestaurante(restaurante).stream()
+					.filter(produto -> !(incluirInativos != null && incluirInativos) && produto.getAtivo())
+					.collect(Collectors.toList());
+		
+		return ProdutoModel.criarCollectionProdutoModelComLinksRestaurante(produtos, idRestaurante);
 	}
 	
 	@GetMapping("/{idProduto}")
 	public ProdutoModel buscar(@PathVariable Long idRestaurante, @PathVariable Long idProduto) {
 		Restaurante restaurante = restauranteService.buscarOuFalha(idRestaurante);
-		Produto produto = produtoService.buscarOuFalhar(idProduto, restaurante);
-		return representationModelAssemblerAndDisassembler
-				.toRepresentationModel(ProdutoModel.class, produto);
+		
+		return ProdutoModel.criarProdutoModelComLinksRestaurante(produtoService.buscarOuFalhar(idProduto, restaurante), 
+				idRestaurante);
 	}
 	
 	@PostMapping
-	public ResponseEntity<ProdutoModel> adicionar(@PathVariable Long idRestaurante, @RequestBody @Valid ProdutoInput produtoInput) {
+	@ResponseStatus(HttpStatus.CREATED)
+	public ProdutoModel adicionar(@PathVariable Long idRestaurante, @RequestBody @Valid ProdutoInput produtoInput) {
 		Restaurante restaurante = restauranteService.buscarOuFalha(idRestaurante);
 		
-		Produto novoProduto = representationModelAssemblerAndDisassembler
-				.toRepresentationModel(Produto.class, produtoInput);
-		
-		ProdutoModel produtoModel = representationModelAssemblerAndDisassembler
-				.toRepresentationModel(ProdutoModel.class, produtoService.salvar(restaurante, novoProduto));
-		URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
-				.path("/{idProduto}").buildAndExpand(produtoModel.getId()).toUri();
-		return ResponseEntity.created(uri).body(produtoModel);
+		Produto novoProduto =  produtoInput.novoProduto();
+				
+		return ProdutoModel.criarProdutoModelComLinksRestaurante(produtoService.salvar(restaurante, novoProduto), 
+				idRestaurante);
 	}
 	
 	@PutMapping("/{idProduto}")
 	public ProdutoModel atualizar(@PathVariable Long idRestaurante, @PathVariable Long idProduto, 
 			@RequestBody @Valid ProdutoInput produtoInput) {
 		Restaurante restaurante = restauranteService.buscarOuFalha(idRestaurante);
-		Produto produtoAtual = produtoService.buscarOuFalhar(idProduto, restaurante);
 		
-		representationModelAssemblerAndDisassembler.copyProperties(produtoInput, produtoAtual);
+		Produto produtoAtualizado = produtoInput.produtoAtualizado(idProduto, restaurante, produtoService);
 		
-		return representationModelAssemblerAndDisassembler
-				.toRepresentationModel(ProdutoModel.class, produtoService.salvar(restaurante, produtoAtual));
+		return ProdutoModel.criarProdutoModelComLinksRestaurante(produtoService.salvar(restaurante, produtoAtualizado), 
+				idRestaurante);
 	}
 }

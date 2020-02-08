@@ -13,4 +13,11 @@ public class CozinhaIdInput {
 	@ApiModelProperty(example = "1")
 	@NotNull
 	private Long id;
+
+	@Deprecated
+	public CozinhaIdInput() {}
+	
+	public CozinhaIdInput(@NotNull Long id) {
+		this.id = id;
+	}
 }

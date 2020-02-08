@@ -13,4 +13,11 @@ public class CidadeIdInput {
 	@ApiModelProperty(example = "1")
 	@NotNull
 	private Long id;
+
+	@Deprecated
+	public CidadeIdInput() {}
+	
+	public CidadeIdInput(@NotNull Long id) {
+		this.id = id;
+	}
 }

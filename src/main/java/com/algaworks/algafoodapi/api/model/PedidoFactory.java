@@ -48,7 +48,7 @@ public class PedidoFactory {
 				.map(itemPedidoInput -> itemPedidoInput.itemPedido(restauranteExistente, produtoService))
 				.collect(Collectors.toList());
 		
-		return new Pedido(pedidoInput.getEnderecoEntrega().endereco(cidadeService), formaPagamentoExistente, 
+		return new Pedido(pedidoInput.getEnderecoEntrega().novoEndereco(cidadeService), formaPagamentoExistente, 
 				restauranteExistente, cliente, itensPedido);
 	}
 }

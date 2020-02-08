@@ -48,7 +48,7 @@ public class PedidoModel extends RepresentationModel<PedidoModel> {
 	@ApiModelProperty(example = "2020-01-21T23:15:22Z")
 	private OffsetDateTime dataEntrega;
 
-	private RestauranteResumoModel restaurante;
+	private RestauranteApenasNomeModel restaurante;
 	
 	private EnderecoModel enderecoEntrega;
 	
@@ -59,7 +59,7 @@ public class PedidoModel extends RepresentationModel<PedidoModel> {
 	private List<ItemPedidoModel> itens;
 	
 	public PedidoModel(Pedido pedido) {
-		RestauranteResumoModel restauranteResumoModel = new RestauranteResumoModel(pedido.getRestaurante());
+		RestauranteApenasNomeModel restauranteResumoModel = new RestauranteApenasNomeModel(pedido.getRestaurante());
 		EnderecoModel enderecoModel = new EnderecoModel(pedido.getEnderecoEntrega());
 		FormaPagamentoModel formaPagamentoModel = new FormaPagamentoModel(pedido.getFormaPagamento());
 		UsuarioModel usuarioModel = new UsuarioModel(pedido.getCliente());
@@ -87,7 +87,7 @@ public class PedidoModel extends RepresentationModel<PedidoModel> {
 		pedidoModel.add(linkTo(methodOn(PedidoController.class).buscar(pedidoModel.getCodigo())).withSelfRel());
 		pedidoModel.add(linkTo(PedidoController.class).withRel("pedidos"));
 		
-		pedidoModel.setRestaurante(RestauranteResumoModel.criarRestauranteResumoModelComLinks(pedido.getRestaurante()));
+		pedidoModel.setRestaurante(RestauranteApenasNomeModel.criarRestauranteApenasNomeModelComLinks(pedido.getRestaurante()));
 		pedidoModel.setEnderecoEntrega(EnderecoModel.criarEnderecoModelComLinks(pedido.getEnderecoEntrega()));
 		pedidoModel.setFormaPagamento(FormaPagamentoModel.criarFormaPagamentoModelComLinks(pedido.getFormaPagamento()));
 		pedidoModel.setCliente(UsuarioModel.criarUsuarioModelComLinks(pedido.getCliente()));

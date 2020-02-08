@@ -81,6 +81,16 @@ public class Restaurante {
 			inverseJoinColumns = @JoinColumn(name = "usuario_id"))
 	private Set<Usuario> responsaveis = new HashSet<>();
 	
+	@Deprecated
+	public Restaurante() {}
+	
+	public Restaurante(String nome, BigDecimal taxaFrete, Endereco endereco, Cozinha cozinha) {
+		this.nome = nome;
+		this.taxaFrete = taxaFrete;
+		this.endereco = endereco;
+		this.cozinha = cozinha;
+	}
+	
 	public void ativar() {
 		this.ativo = Boolean.TRUE;
 	}
@@ -95,6 +105,22 @@ public class Restaurante {
 	
 	public void fechar() {
 		this.aberto = Boolean.FALSE;
+	}
+	
+	public boolean permiteAtivar() {
+		return !this.ativo;
+	}
+	
+	public boolean permiteInativar() {
+		return this.ativo;
+	}
+	
+	public boolean permiteAbrir() {
+		return this.ativo && !this.aberto;
+	}
+	
+	public boolean permiteFechar() {
+		return this.aberto;
 	}
 	
 	public boolean removerFormaPagamento(FormaPagamento formaPagamento) {

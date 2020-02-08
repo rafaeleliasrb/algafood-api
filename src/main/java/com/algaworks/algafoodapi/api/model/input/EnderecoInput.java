@@ -39,7 +39,19 @@ public class EnderecoInput {
 	@NotNull
 	private CidadeIdInput cidade;
 	
-	public Endereco endereco(CidadeService cidadeService) {
+	@Deprecated
+	public EnderecoInput() {}
+	
+	public EnderecoInput(Endereco endereco) {
+		this.cep = endereco.getCep();
+		this.logradouro = endereco.getLogradouro();
+		this.numero = endereco.getNumero();
+		this.complemento = endereco.getComplemento();
+		this.bairro = endereco.getBairro();
+		this.cidade = new CidadeIdInput(endereco.getCidade().getId());
+	}
+	
+	public Endereco novoEndereco(CidadeService cidadeService) {
 		Cidade cidadeExistente = cidadeService.buscarOuFalhar(cidade.getId());
 		return new Endereco(cep, logradouro, numero, complemento, bairro, cidadeExistente);
 	}

@@ -6,6 +6,10 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.PositiveOrZero;
 
+import com.algaworks.algafoodapi.domain.model.Produto;
+import com.algaworks.algafoodapi.domain.model.Restaurante;
+import com.algaworks.algafoodapi.domain.service.ProdutoService;
+
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
@@ -29,4 +33,19 @@ public class ProdutoInput {
 	@ApiModelProperty(example = "true", position = 20)
 	@NotNull
 	private Boolean ativo;
+	
+	public Produto novoProduto() {
+		return new Produto(nome, descricao, preco, ativo);
+	}
+	
+	public Produto produtoAtualizado(Long idProduto, Restaurante restaurante, ProdutoService produtoService) {
+		Produto produtoAtual = produtoService.buscarOuFalhar(idProduto, restaurante);
+		
+		produtoAtual.setNome(nome);
+		produtoAtual.setDescricao(descricao);
+		produtoAtual.setPreco(preco);
+		produtoAtual.setAtivo(ativo);
+		
+		return produtoAtual;
+	}
 }

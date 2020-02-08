@@ -1,11 +1,9 @@
 package com.algaworks.algafoodapi.api.controller;
 
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -34,20 +32,22 @@ public class RestauranteUsuarioResponsavelController implements RestauranteUsuar
 	public CollectionModel<UsuarioModel> listar(@PathVariable Long idRestaurante) {
 		Restaurante restaurante = restauranteService.buscarOuFalha(idRestaurante);
 		
-		return UsuarioModel.criarCollectionUsuarioModelComLinks(restaurante.getResponsaveis())
-				.removeLinks()
-				.add(linkTo(methodOn(RestauranteUsuarioResponsavelController.class).listar(idRestaurante)).withSelfRel());
+		return UsuarioModel.criarCollectionUsuarioModelComLinksRestaurante(restaurante.getResponsaveis(), idRestaurante);
 	}
 	
 	@PutMapping("/{idResponsavel}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	public void adicionar(@PathVariable Long idRestaurante, @PathVariable Long idResponsavel) {
+	public ResponseEntity<Void> adicionar(@PathVariable Long idRestaurante, @PathVariable Long idResponsavel) {
 		restauranteService.adicionarResponsavel(idRestaurante, idResponsavel);
+		
+		return ResponseEntity.noContent().build();
 	}
 	
 	@DeleteMapping("/{idResponsavel}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	public void remover(@PathVariable Long idRestaurante, @PathVariable Long idResponsavel) {
+	public ResponseEntity<Void> remover(@PathVariable Long idRestaurante, @PathVariable Long idResponsavel) {
 		restauranteService.removerResponsavel(idRestaurante, idResponsavel);
+		
+		return ResponseEntity.noContent().build();
 	}
 }

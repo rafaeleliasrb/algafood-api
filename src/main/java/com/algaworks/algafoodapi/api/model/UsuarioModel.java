@@ -10,7 +10,9 @@ import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.RepresentationModel;
 import org.springframework.hateoas.server.core.Relation;
 
+import com.algaworks.algafoodapi.api.controller.RestauranteUsuarioResponsavelController;
 import com.algaworks.algafoodapi.api.controller.UsuarioController;
+import com.algaworks.algafoodapi.api.controller.UsuarioGrupoController;
 import com.algaworks.algafoodapi.domain.model.Usuario;
 
 import io.swagger.annotations.ApiModelProperty;
@@ -41,17 +43,39 @@ public class UsuarioModel extends RepresentationModel<UsuarioModel> {
 		UsuarioModel usuarioModel = new UsuarioModel(usuario);
 		
 		usuarioModel.add(linkTo(methodOn(UsuarioController.class).buscar(usuarioModel.getId())).withSelfRel());
-		
 		usuarioModel.add(linkTo(methodOn(UsuarioController.class).listar()).withRel("usuarios"));
+		usuarioModel.add(linkTo(methodOn(UsuarioGrupoController.class).listar(usuario.getId())).withRel("grupos-usuario"));
 		
 		return usuarioModel;
 	}
 	
 	public static CollectionModel<UsuarioModel> criarCollectionUsuarioModelComLinks(Collection<Usuario> usuarios) {
-		CollectionModel<UsuarioModel> collectionModel = new CollectionModel<UsuarioModel>(usuarios.stream()
+		CollectionModel<UsuarioModel> collectionModel = new CollectionModel<>(usuarios.stream()
 				.map(UsuarioModel::criarUsuarioModelComLinks).collect(Collectors.toList()));
 		
 		collectionModel.add(linkTo(UsuarioController.class).withSelfRel());
+		
+		return collectionModel;
+	}
+	
+	public static UsuarioModel criarUsuarioModelComLinksRestaurante(Usuario responsavel, Long idRestaurante) {
+		UsuarioModel usuarioModel = UsuarioModel.criarUsuarioModelComLinks(responsavel);
+		
+		usuarioModel.add(linkTo(methodOn(RestauranteUsuarioResponsavelController.class)
+				.remover(idRestaurante, responsavel.getId())).withRel("remover"));
+		
+		return usuarioModel;
+	}
+	
+	public static CollectionModel<UsuarioModel> criarCollectionUsuarioModelComLinksRestaurante(
+			Collection<Usuario> responsaveis, Long idRestaurante) {
+		CollectionModel<UsuarioModel> collectionModel = new CollectionModel<>(responsaveis.stream()
+				.map(responsavel -> criarUsuarioModelComLinksRestaurante(responsavel, idRestaurante))
+				.collect(Collectors.toList()));
+		
+		collectionModel.add(linkTo(methodOn(RestauranteUsuarioResponsavelController.class).listar(idRestaurante)).withSelfRel());
+		collectionModel.add(linkTo(methodOn(RestauranteUsuarioResponsavelController.class).adicionar(idRestaurante, null))
+				.withRel("adicionar"));
 		
 		return collectionModel;
 	}

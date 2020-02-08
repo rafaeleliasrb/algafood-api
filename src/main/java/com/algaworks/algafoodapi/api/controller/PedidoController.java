@@ -25,6 +25,7 @@ import com.algaworks.algafoodapi.api.model.PedidoModel;
 import com.algaworks.algafoodapi.api.model.PedidoResumoModel;
 import com.algaworks.algafoodapi.api.model.input.PedidoInput;
 import com.algaworks.algafoodapi.api.openapi.controller.PedidoControllerOpenApi;
+import com.algaworks.algafoodapi.core.data.PageWrapper;
 import com.algaworks.algafoodapi.core.data.PageableTranslator;
 import com.algaworks.algafoodapi.domain.exception.EntidadeNaoEncontradaException;
 import com.algaworks.algafoodapi.domain.exception.NegocioException;
@@ -53,32 +54,14 @@ public class PedidoController implements PedidoControllerOpenApi {
 		this.pedidoFactory = pedidoFactory;
 	}
 	
-//	usando jsonFilter
-//	@GetMapping
-//	MappingJacksonValue listar(@RequestParam(required = false) String campos) {
-//		List<PedidoResumoModel> pedidosModel = representationModelAssemblerAndDisassembler
-//				.toCollectionRepresentationModel(PedidoResumoModel.class, pedidoRepository.findAll());
-//		
-//		MappingJacksonValue pedidosWrapper = new MappingJacksonValue(pedidosModel);
-//		
-//		SimpleFilterProvider filterProvider = new SimpleFilterProvider();
-//		filterProvider.addFilter("pedidoFilter", SimpleBeanPropertyFilter.serializeAll());
-//		
-//		if(StringUtils.isNotBlank(campos)) {
-//			filterProvider.addFilter("pedidoFilter", SimpleBeanPropertyFilter.filterOutAllExcept(campos.split(",")));
-//		}
-//		
-//		pedidosWrapper.setFilters(filterProvider);
-//		
-//		return pedidosWrapper;
-//	}
-	
 	@GetMapping
 	public PagedModel<PedidoResumoModel> pesquisar(PedidoFilter pedidoFilter, @PageableDefault(size = 10) Pageable pageable) {
 		pageable = traduzirPageable(pageable);
-		Page<Pedido> pedidos = pedidoRepository.findAll(PedidoSpecs.usandoFiltro(pedidoFilter), pageable);
 		
-		return pagedResourcesAssembler.toModel(pedidos, PedidoResumoModel::criarPedidoResumoModelComLinks);
+		Page<Pedido> pedidosPage = pedidoRepository.findAll(PedidoSpecs.usandoFiltro(pedidoFilter), pageable);
+		
+		return pagedResourcesAssembler.toModel(new PageWrapper<Pedido>(pedidosPage, pageable), 
+				PedidoResumoModel::criarPedidoResumoModelComLinks);
 	}
 
 	@GetMapping("{codigoPedido}")

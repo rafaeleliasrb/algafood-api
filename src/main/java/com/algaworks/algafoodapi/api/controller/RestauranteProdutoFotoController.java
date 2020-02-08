@@ -23,7 +23,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.algaworks.algafoodapi.api.assembler.RepresentationModelAssemblerAndDisassembler;
 import com.algaworks.algafoodapi.api.model.FotoProdutoModel;
 import com.algaworks.algafoodapi.api.model.input.FotoProdutoInput;
 import com.algaworks.algafoodapi.api.openapi.controller.RestauranteProdutoFotoControllerOpenApi;
@@ -46,17 +45,14 @@ public class RestauranteProdutoFotoController implements RestauranteProdutoFotoC
 	private final RestauranteService restauranteService;
 	private final FotoProdutoService fotoProdutoService;
 	private final FotoStorageService fotoStorageService;
-	private final RepresentationModelAssemblerAndDisassembler representationModelAssemblerAndDisassembler;
 	
 	@Autowired
 	public RestauranteProdutoFotoController(ProdutoService produtoService, RestauranteService restauranteService,
-			FotoProdutoService catalogoFotoProdutoService, FotoStorageService fotoStorageService,
-			RepresentationModelAssemblerAndDisassembler representationModelAssemblerAndDisassembler) {
+			FotoProdutoService catalogoFotoProdutoService, FotoStorageService fotoStorageService) {
 		this.produtoService = produtoService;
 		this.restauranteService = restauranteService;
 		this.fotoProdutoService = catalogoFotoProdutoService;
 		this.fotoStorageService = fotoStorageService;
-		this.representationModelAssemblerAndDisassembler = representationModelAssemblerAndDisassembler;
 	}
 
 	@PutMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -68,16 +64,16 @@ public class RestauranteProdutoFotoController implements RestauranteProdutoFotoC
 		
 		FotoProduto fotoProduto = criarFotoProduto(fotoProdutoInput, produto);
 		
-		return representationModelAssemblerAndDisassembler
-				.toRepresentationModel(FotoProdutoModel.class, fotoProdutoService.salvar(fotoProduto, 
-						fotoProdutoInput.getArquivo().getInputStream()));
+		return FotoProdutoModel.criarFotoProdutoModelComLinksRestauranteProduto(
+				fotoProdutoService.salvar(fotoProduto, fotoProdutoInput.getArquivo().getInputStream()), 
+				idRestaurante, idProduto);
 	}
 	
 	@GetMapping
 	public FotoProdutoModel buscar(@PathVariable Long idRestaurante, @PathVariable Long idProduto) {
 		FotoProduto fotoProduto = fotoProdutoService.buscarOuFalhar(idRestaurante, idProduto);
-		return representationModelAssemblerAndDisassembler
-				.toRepresentationModel(FotoProdutoModel.class, fotoProduto);
+		
+		return FotoProdutoModel.criarFotoProdutoModelComLinksRestauranteProduto(fotoProduto, idRestaurante, idProduto);
 	}
 	
 	@GetMapping(produces = MediaType.ALL_VALUE)

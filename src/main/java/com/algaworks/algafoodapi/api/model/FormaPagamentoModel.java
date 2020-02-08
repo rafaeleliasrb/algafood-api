@@ -3,10 +3,15 @@ package com.algaworks.algafoodapi.api.model;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
+import java.util.Collection;
+import java.util.stream.Collectors;
+
+import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.RepresentationModel;
 import org.springframework.hateoas.server.core.Relation;
 
 import com.algaworks.algafoodapi.api.controller.FormaPagamentoController;
+import com.algaworks.algafoodapi.api.controller.RestauranteFormaPagamentoController;
 import com.algaworks.algafoodapi.domain.model.FormaPagamento;
 
 import io.swagger.annotations.ApiModelProperty;
@@ -37,5 +42,39 @@ public class FormaPagamentoModel extends RepresentationModel<FormaPagamentoModel
 		formaPagamentoModel.add(linkTo(FormaPagamentoController.class).withRel("formas-pagamento"));
 		
 		return formaPagamentoModel;
+	}
+	
+	public static CollectionModel<FormaPagamentoModel> criarCollectorFormaPagamentoModelComLink(
+			Collection<FormaPagamento> formasPagamento) {
+		CollectionModel<FormaPagamentoModel> collectionModel = 
+				new CollectionModel<>(formasPagamento.stream()
+						.map(FormaPagamentoModel::criarFormaPagamentoModelComLinks).collect(Collectors.toList()));
+		
+		collectionModel.add(linkTo(FormaPagamentoController.class).withRel("formas-pagamento"));
+		
+		return collectionModel;
+	}
+	
+	public static FormaPagamentoModel criarFormaPagamentoModelComLinkRestaurante(
+			FormaPagamento formaPagamento, Long idRestaurante) {
+		FormaPagamentoModel formaPagamentoModel = criarFormaPagamentoModelComLinks(formaPagamento);
+		
+		formaPagamentoModel.add(linkTo(methodOn(RestauranteFormaPagamentoController.class)
+				.desassociar(idRestaurante, formaPagamento.getId())).withRel("desassociar"));
+		
+		return formaPagamentoModel;
+	}
+
+	public static CollectionModel<FormaPagamentoModel> criarCollectorFormaPagamentoModelComLinkRestaurante(
+			Collection<FormaPagamento> formasPagamento, Long idRestaurante) {
+		CollectionModel<FormaPagamentoModel> collectionModel = new CollectionModel<>(formasPagamento.stream()
+						.map(formaPagamento -> criarFormaPagamentoModelComLinkRestaurante(formaPagamento, idRestaurante))
+						.collect(Collectors.toList()));
+		
+		collectionModel.add(linkTo(methodOn(RestauranteFormaPagamentoController.class).listar(idRestaurante)).withSelfRel());
+		collectionModel.add(linkTo(methodOn(RestauranteFormaPagamentoController.class)
+				.associar(idRestaurante, null)).withRel("associar"));
+		
+		return collectionModel;
 	}
 }

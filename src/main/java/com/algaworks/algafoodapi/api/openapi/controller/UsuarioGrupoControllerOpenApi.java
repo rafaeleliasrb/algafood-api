@@ -1,6 +1,7 @@
 package com.algaworks.algafoodapi.api.openapi.controller;
 
-import java.util.List;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.http.ResponseEntity;
 
 import com.algaworks.algafoodapi.api.exceptionhandler.Problem;
 import com.algaworks.algafoodapi.api.model.GrupoModel;
@@ -19,7 +20,7 @@ public interface UsuarioGrupoControllerOpenApi {
 		@ApiResponse(code = 400, message = "Id do usuário inválido", response = Problem.class),
 		@ApiResponse(code = 404, message = "Usuário não encontrado", response = Problem.class)
 	})
-	List<GrupoModel> listar(
+	CollectionModel<GrupoModel> listar(
 			@ApiParam(example = "1", value = "Id de um usuário", required = true)
 			Long idUsuario);
 	
@@ -29,7 +30,7 @@ public interface UsuarioGrupoControllerOpenApi {
 		@ApiResponse(code = 400, message = "Id do usuário ou grupo inválido", response = Problem.class),
 		@ApiResponse(code = 404, message = "Usuário ou grupo não encontrado", response = Problem.class)
 	})
-	void associar(
+	ResponseEntity<Void> associar(
 			@ApiParam(example = "1", value = "Id de um usuário", required = true)
 			Long idUsuario, 
 			
@@ -42,7 +43,7 @@ public interface UsuarioGrupoControllerOpenApi {
 		@ApiResponse(code = 400, message = "Id do usuário ou grupo inválido", response = Problem.class),
 		@ApiResponse(code = 404, message = "Usuário ou grupo não encontrado", response = Problem.class)
 	})
-	void desassociar(
+	ResponseEntity<Void> desassociar(
 			@ApiParam(example = "1", value = "Id de um usuário", required = true)
 			Long idUsuario, 
 			

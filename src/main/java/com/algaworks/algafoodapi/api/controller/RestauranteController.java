@@ -1,15 +1,16 @@
 package com.algaworks.algafoodapi.api.controller;
 
 import java.math.BigDecimal;
-import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.CollectionModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -26,22 +27,20 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import com.algaworks.algafoodapi.api.assembler.RestauranteInputAssemblerAndDisassembler;
-import com.algaworks.algafoodapi.api.assembler.RestauranteModelAssembler;
+import com.algaworks.algafoodapi.api.model.RestauranteApenasNomeModel;
 import com.algaworks.algafoodapi.api.model.RestauranteModel;
+import com.algaworks.algafoodapi.api.model.RestauranteResumoModel;
 import com.algaworks.algafoodapi.api.model.input.RestauranteInput;
-import com.algaworks.algafoodapi.api.model.view.RestauranteView;
 import com.algaworks.algafoodapi.api.openapi.controller.RestauranteControllerOpenApi;
 import com.algaworks.algafoodapi.domain.exception.NegocioException;
 import com.algaworks.algafoodapi.domain.exception.RestauranteNaoEncontradoException;
 import com.algaworks.algafoodapi.domain.exception.ValidacaoException;
-import com.algaworks.algafoodapi.domain.model.Cidade;
 import com.algaworks.algafoodapi.domain.model.Restaurante;
 import com.algaworks.algafoodapi.domain.repository.RestauranteRepository;
+import com.algaworks.algafoodapi.domain.service.CidadeService;
+import com.algaworks.algafoodapi.domain.service.CozinhaService;
 import com.algaworks.algafoodapi.domain.service.RestauranteService;
-import com.fasterxml.jackson.annotation.JsonView;
 
 @RestController
 @RequestMapping(value = "/restaurantes", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -51,84 +50,50 @@ public class RestauranteController implements RestauranteControllerOpenApi {
 	private final RestauranteService restauranteService;
 	private final MergeadorDeRecurso mergeadorDeRecurso;
 	private final SmartValidator smartValidator;
-	private final RestauranteModelAssembler restauranteModelAssembler;
-	private final RestauranteInputAssemblerAndDisassembler restauranteInputAssemblerAndDisassembler;
+	private final CozinhaService cozinhaService;
+	private final CidadeService cidadeService;
 	
 	@Autowired
 	public RestauranteController(RestauranteRepository restauranteRepository, RestauranteService restauranteService, 
 			MergeadorDeRecurso mergeadorDeRecurso, SmartValidator smartValidator, 
-			RestauranteModelAssembler restauranteModelAssembler, 
-			RestauranteInputAssemblerAndDisassembler restauranteInputAssemblerAndDisassembler) {
+			CozinhaService cozinhaService, CidadeService cidadeService) {
 		this.restauranteRepository = restauranteRepository;
 		this.restauranteService = restauranteService;
 		this.mergeadorDeRecurso = mergeadorDeRecurso;
 		this.smartValidator = smartValidator;
-		this.restauranteModelAssembler = restauranteModelAssembler;
-		this.restauranteInputAssemblerAndDisassembler = restauranteInputAssemblerAndDisassembler;
+		this.cozinhaService = cozinhaService;
+		this.cidadeService = cidadeService;
 	}
 	
-	@JsonView({RestauranteView.Resumo.class})
 	@GetMapping
-	public List<RestauranteModel> listar() {
-		return restauranteModelAssembler.toCollectionModel(restauranteRepository.findAll());
+	public CollectionModel<RestauranteResumoModel> listar() {
+		return RestauranteResumoModel.criarCollectorRestauranteResumoModelComLinks(restauranteRepository.findAll());
 	}
 	
-	@JsonView({RestauranteView.ApenasNome.class})
 	@GetMapping(params = "projecao=apenas-nome")
-	public List<RestauranteModel> listarApenasNome() {
-		return restauranteModelAssembler.toCollectionModel(restauranteRepository.findAll());
+	public CollectionModel<RestauranteApenasNomeModel> listarApenasNome() {
+		return RestauranteApenasNomeModel.criarCollectorRestauranteApenasNomeModelComLinks(restauranteRepository.findAll());
 	}
-	
-//	@GetMapping
-//	public MappingJacksonValue listar(@RequestParam(required = false) String projecao) {
-//		List<Restaurante> restaurantes = restauranteRepository.findAll();
-//		List<RestauranteModel> restaurantesModel = restauranteModelAssembler.toCollectionModel(restaurantes);
-//		
-//		MappingJacksonValue restaurantesWrapper = new MappingJacksonValue(restaurantesModel);
-//		
-//		restaurantesWrapper.setSerializationView(RestauranteView.Resumo.class);
-//		
-//		if ("apenas-nome".equals(projecao)) {
-//			restaurantesWrapper.setSerializationView(RestauranteView.ApenasNome.class);
-//		} else if ("completo".equals(projecao)) {
-//			restaurantesWrapper.setSerializationView(null);
-//		}
-//		
-//		return restaurantesWrapper;
-//	}
-	
-//	@GetMapping
-//	public List<RestauranteModel> listar() {
-//		return restauranteModelAssembler.toCollectionModel(restauranteRepository.findAll());
-//	}
 	
 	@GetMapping(value = "/{id}")
 	public RestauranteModel buscar(@PathVariable Long id) {
-		return restauranteModelAssembler.toModel(restauranteService.buscarOuFalha(id));
+		return RestauranteModel.criarRestauranteModelComLinks(restauranteService.buscarOuFalha(id));
 	}
 	
 	@PostMapping
-	public ResponseEntity<Object> adicionar(@RequestBody @Valid RestauranteInput restauranteInput) {
-		Restaurante restaurante = restauranteInputAssemblerAndDisassembler.toDomainModel(restauranteInput);
+	@ResponseStatus(HttpStatus.CREATED)
+	public RestauranteModel adicionar(@RequestBody @Valid RestauranteInput restauranteInput) {
+		Restaurante restaurante = restauranteInput.novoRestaurante(cozinhaService, cidadeService);
 		
-		RestauranteModel restauranteNovo = restauranteModelAssembler
-				.toModel(restauranteService.salvar(restaurante));
-		
-		URI restauranteUri = ServletUriComponentsBuilder.fromCurrentRequest()
-				.path("/{id}").buildAndExpand(restauranteNovo.getId()).toUri();
-		return ResponseEntity.created(restauranteUri).body(restauranteNovo);
+		return RestauranteModel.criarRestauranteModelComLinks(restauranteService.salvar(restaurante)); 
 	}
 	
-	@PutMapping(value = "{id}")
-	public RestauranteModel atualizar(@PathVariable Long id, @RequestBody @Valid RestauranteInput restauranteInput) {
-		Restaurante restauranteAtual = restauranteService.buscarOuFalha(id);
+	@PutMapping(value = "{idRestaurante}")
+	public RestauranteModel atualizar(@PathVariable Long idRestaurante, @RequestBody @Valid RestauranteInput restauranteInput) {
+		Restaurante restaurante = restauranteInput
+				.restauranteAtualizado(idRestaurante, restauranteService, cozinhaService, cidadeService);
 		
-		if(restauranteAtual.getEndereco() != null) {
-			restauranteAtual.getEndereco().setCidade(new Cidade());
-		}
-		
-		restauranteInputAssemblerAndDisassembler.copyToDomainObject(restauranteInput, restauranteAtual);
-		return restauranteModelAssembler.toModel(restauranteService.salvar(restauranteAtual));
+		return RestauranteModel.criarRestauranteModelComLinks(restauranteService.salvar(restaurante));
 	}
 	
 	@DeleteMapping("/{id}")
@@ -140,8 +105,7 @@ public class RestauranteController implements RestauranteControllerOpenApi {
 	@PatchMapping("/{id}")
 	public RestauranteModel atualizarParcial(@PathVariable Long id, @RequestBody Map<String, Object> camposOrigem,
 			HttpServletRequest request) {
-		RestauranteInput restauranteAtual = 
-				restauranteInputAssemblerAndDisassembler.toInput(restauranteService.buscarOuFalha(id));
+		RestauranteInput restauranteAtual = new RestauranteInput(restauranteService.buscarOuFalha(id));
 		mergeadorDeRecurso.mergeCampos(RestauranteInput.class, camposOrigem, restauranteAtual, request);
 		validadarCampos(restauranteAtual, "restauranteInput");
 		
@@ -150,33 +114,43 @@ public class RestauranteController implements RestauranteControllerOpenApi {
 	
 	@PutMapping(value = "{idRestaurante}/ativo")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	public void ativar(@PathVariable Long idRestaurante) {
+	public ResponseEntity<Void> ativar(@PathVariable Long idRestaurante) {
 		restauranteService.ativar(idRestaurante);
+		
+		return ResponseEntity.noContent().build();
 	}
 	
 	@DeleteMapping(value = "{idRestaurante}/ativo")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	public void inativar(@PathVariable Long idRestaurante) {
+	public ResponseEntity<Void> inativar(@PathVariable Long idRestaurante) {
 		restauranteService.inativar(idRestaurante);
+		
+		return ResponseEntity.noContent().build();
 	}
 	
 	@PutMapping("/{idRestaurante}/abertura")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	public void abrir(@PathVariable Long idRestaurante) {
+	public ResponseEntity<Void> abrir(@PathVariable Long idRestaurante) {
 		restauranteService.abrir(idRestaurante);
+		
+		return ResponseEntity.noContent().build();
 	}
 	
 	@PutMapping("/{idRestaurante}/fechamento")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	public void fechar(@PathVariable Long idRestaurante) {
+	public ResponseEntity<Void> fechar(@PathVariable Long idRestaurante) {
 		restauranteService.fechar(idRestaurante);
+		
+		return ResponseEntity.noContent().build();
 	}
 	
 	@PutMapping("/ativacoes")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	public void ativarMutiplos(@RequestBody List<Long> idsRestaurante) {
+	public ResponseEntity<Void> ativarMutiplos(@RequestBody List<Long> idsRestaurante) {
 		try {
 			restauranteService.ativar(idsRestaurante);
+			
+			return ResponseEntity.noContent().build();
 		} catch (RestauranteNaoEncontradoException e) {
 			throw new NegocioException(e.getMessage(), e);
 		}
@@ -184,9 +158,11 @@ public class RestauranteController implements RestauranteControllerOpenApi {
 	
 	@DeleteMapping("/ativacoes")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	public void desativarMutiplos(@RequestBody List<Long> idsRestaurante) {
+	public ResponseEntity<Void> desativarMutiplos(@RequestBody List<Long> idsRestaurante) {
 		try {
 			restauranteService.desativar(idsRestaurante);
+			
+			return ResponseEntity.noContent().build();
 		} catch (RestauranteNaoEncontradoException e) {
 			throw new NegocioException(e.getMessage(), e);
 		}
@@ -205,24 +181,28 @@ public class RestauranteController implements RestauranteControllerOpenApi {
 	@GetMapping("/buscar")
 	public List<RestauranteModel> buscar(@RequestParam("nome") String nome, @RequestParam BigDecimal taxaFreteInicial, 
 			@RequestParam BigDecimal taxaFreteFinal) {
-		return restauranteModelAssembler
-				.toCollectionModel(restauranteRepository.buscar(nome, taxaFreteInicial, taxaFreteFinal));
+		return restauranteRepository.buscar(nome, taxaFreteInicial, taxaFreteFinal).stream()
+				.map(RestauranteModel::criarRestauranteModelComLinks).collect(Collectors.toList());
 	}
 	
 	@GetMapping("/buscar-com-criteria")
 	public List<RestauranteModel> buscarComCriteria(String nome, BigDecimal taxaFreteInicial, BigDecimal taxaFreteFinal) {
-		return restauranteModelAssembler
-				.toCollectionModel(restauranteRepository.buscarComCriteria(nome, taxaFreteInicial, taxaFreteFinal));
+		return restauranteRepository.buscarComCriteria(nome, taxaFreteInicial, taxaFreteFinal).stream()
+				.map(RestauranteModel::criarRestauranteModelComLinks).collect(Collectors.toList());
 	}
 	
 	@GetMapping("/com-frete-gratis")
 	public List<RestauranteModel> buscarComFreteGratis(String nome) {
-		return restauranteModelAssembler
-				.toCollectionModel(restauranteRepository.buscarComFreteGratis(nome));
+		return restauranteRepository.buscarComFreteGratis(nome).stream()
+				.map(RestauranteModel::criarRestauranteModelComLinks).collect(Collectors.toList());
 	}
 	
 	@GetMapping("/buscar-primeiro")
 	public Optional<RestauranteModel> buscarPrimeiro() {
-		return restauranteModelAssembler.toOptionalModel(restauranteRepository.buscarPrimeiro());
+		Optional<Restaurante> primeiroRestaurante = restauranteRepository.buscarPrimeiro();
+		if(primeiroRestaurante.isPresent()) {
+			return Optional.of(RestauranteModel.criarRestauranteModelComLinks(primeiroRestaurante.get()));
+		}
+		return Optional.empty();
 	}
 }
