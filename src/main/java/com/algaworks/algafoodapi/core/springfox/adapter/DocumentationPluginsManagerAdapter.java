@@ -14,6 +14,9 @@ import springfox.documentation.spring.web.SpringGroupingStrategy;
 import springfox.documentation.spring.web.plugins.DefaultConfiguration;
 import springfox.documentation.spring.web.plugins.DocumentationPluginsManager;
 
+/**
+ * Adapter para corrigir problema da versão do SpringFox com Spring 5
+ */
 @SuppressWarnings("deprecation")
 @Primary
 @Component

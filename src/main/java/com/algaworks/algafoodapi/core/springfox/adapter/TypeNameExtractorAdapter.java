@@ -26,6 +26,9 @@ import springfox.documentation.spi.schema.GenericTypeNamingStrategy;
 import springfox.documentation.spi.schema.TypeNameProviderPlugin;
 import springfox.documentation.spi.schema.contexts.ModelContext;
 
+/**
+ * Adapter para corrigir problema da versão do SpringFox com Spring 5
+ */
 @Primary
 @Component
 public class TypeNameExtractorAdapter extends TypeNameExtractor {
