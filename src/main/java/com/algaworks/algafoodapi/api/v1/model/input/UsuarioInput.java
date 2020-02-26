@@ -27,6 +27,6 @@ public class UsuarioInput {
 	private String senha;
 	
 	public Usuario novoUsuario() {
-		return new Usuario(nome, email, senha);
+		return Usuario.criarUsuarioComSenhaSemHash(nome, email, senha);
 	}
 }

@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.algaworks.algafoodapi.api.v1.model.ProdutoModel;
 import com.algaworks.algafoodapi.api.v1.model.input.ProdutoInput;
 import com.algaworks.algafoodapi.api.v1.openapi.controller.RestauranteProdutoControllerOpenApi;
+import com.algaworks.algafoodapi.core.security.CheckSecurity;
 import com.algaworks.algafoodapi.domain.model.Produto;
 import com.algaworks.algafoodapi.domain.model.Restaurante;
 import com.algaworks.algafoodapi.domain.repository.ProdutoRepository;
@@ -44,6 +45,8 @@ public class RestauranteProdutoController implements RestauranteProdutoControlle
 		this.restauranteService = restauranteService;
 	}
 	
+	@CheckSecurity.Restaurantes.PodeConsultar
+	@Override
 	@GetMapping
 	public CollectionModel<ProdutoModel> listar(@PathVariable Long idRestaurante, 
 			@RequestParam(required = false) Boolean incluirInativos) {
@@ -56,6 +59,8 @@ public class RestauranteProdutoController implements RestauranteProdutoControlle
 		return ProdutoModel.criarCollectionProdutoModelComLinksRestaurante(produtos, idRestaurante);
 	}
 	
+	@CheckSecurity.Restaurantes.PodeConsultar
+	@Override
 	@GetMapping("/{idProduto}")
 	public ProdutoModel buscar(@PathVariable Long idRestaurante, @PathVariable Long idProduto) {
 		Restaurante restaurante = restauranteService.buscarOuFalha(idRestaurante);
@@ -64,6 +69,8 @@ public class RestauranteProdutoController implements RestauranteProdutoControlle
 				idRestaurante);
 	}
 	
+	@CheckSecurity.Restaurantes.PodeGerenciarInformacoesFuncionais
+	@Override
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
 	public ProdutoModel adicionar(@PathVariable Long idRestaurante, @RequestBody @Valid ProdutoInput produtoInput) {
@@ -75,6 +82,8 @@ public class RestauranteProdutoController implements RestauranteProdutoControlle
 				idRestaurante);
 	}
 	
+	@CheckSecurity.Restaurantes.PodeGerenciarInformacoesFuncionais
+	@Override
 	@PutMapping("/{idProduto}")
 	public ProdutoModel atualizar(@PathVariable Long idRestaurante, @PathVariable Long idProduto, 
 			@RequestBody @Valid ProdutoInput produtoInput) {

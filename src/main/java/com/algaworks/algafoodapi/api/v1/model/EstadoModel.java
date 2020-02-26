@@ -11,6 +11,7 @@ import org.springframework.hateoas.RepresentationModel;
 import org.springframework.hateoas.server.core.Relation;
 
 import com.algaworks.algafoodapi.api.v1.controller.EstadoController;
+import com.algaworks.algafoodapi.core.security.AlgaSecurity;
 import com.algaworks.algafoodapi.domain.model.Estado;
 
 import io.swagger.annotations.ApiModelProperty;
@@ -36,8 +37,10 @@ public class EstadoModel extends RepresentationModel<EstadoModel> {
 	public static EstadoModel criarEstadoModelComLinks(Estado estado) {
 		EstadoModel estadoModel = new EstadoModel(estado);
 		
-		estadoModel.add(linkTo(methodOn(EstadoController.class).buscar(estadoModel.getId())).withSelfRel());
-		estadoModel.add(linkTo(methodOn(EstadoController.class).listar()).withRel("estados"));
+		if(AlgaSecurity.podeConsultar()) {
+			estadoModel.add(linkTo(methodOn(EstadoController.class).buscar(estadoModel.getId())).withSelfRel());
+			estadoModel.add(linkTo(methodOn(EstadoController.class).listar()).withRel("estados"));
+		}
 		
 		return estadoModel;
 	}
@@ -46,7 +49,9 @@ public class EstadoModel extends RepresentationModel<EstadoModel> {
 		CollectionModel<EstadoModel> collectionModel = new CollectionModel<>(estados.stream().map(EstadoModel::criarEstadoModelComLinks)
 			.collect(Collectors.toList()));
 		
-		collectionModel.add(linkTo(EstadoController.class).withSelfRel());
+		if(AlgaSecurity.podeConsultar()) {
+			collectionModel.add(linkTo(EstadoController.class).withSelfRel());
+		}
 		
 		return collectionModel;
 	}

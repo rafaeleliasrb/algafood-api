@@ -11,6 +11,7 @@ import org.springframework.hateoas.RepresentationModel;
 import org.springframework.hateoas.server.core.Relation;
 
 import com.algaworks.algafoodapi.api.v1.controller.CidadeController;
+import com.algaworks.algafoodapi.core.security.AlgaSecurity;
 import com.algaworks.algafoodapi.domain.model.Cidade;
 
 import io.swagger.annotations.ApiModelProperty;
@@ -41,12 +42,14 @@ public class CidadeModel extends RepresentationModel<CidadeModel> {
 	public static CidadeModel criarCidadeModelComLinks(Cidade cidade) {
 		CidadeModel cidadeModel = new CidadeModel(cidade);
 		
-		cidadeModel.add(linkTo(methodOn(CidadeController.class).buscar(cidade.getId())).withSelfRel());
-		cidadeModel.add(linkTo(methodOn(CidadeController.class).listar()).withRel("cidades"));
-		
 		cidadeModel.setEstado(EstadoModel.criarEstadoModelComLinks(cidade.getEstado()));
 		/*cidadeModel.getEstado().add(linkTo(methodOn(EstadoController.class).buscar(cidadeModel.getEstado().getId()))
 				.withSelfRel());*/
+		
+		if(AlgaSecurity.podeConsultar()) {
+			cidadeModel.add(linkTo(methodOn(CidadeController.class).buscar(cidade.getId())).withSelfRel());
+			cidadeModel.add(linkTo(methodOn(CidadeController.class).listar()).withRel("cidades"));
+		}
 		
 		return cidadeModel;
 	}
@@ -56,7 +59,10 @@ public class CidadeModel extends RepresentationModel<CidadeModel> {
 				new CollectionModel<>(cidades.stream()
 						.map(CidadeModel::criarCidadeModelComLinks).collect(Collectors.toList()));
 		
-		collectionModel.add(linkTo(CidadeController.class).withSelfRel());
+		if(AlgaSecurity.podeConsultar()) {
+			collectionModel.add(linkTo(CidadeController.class).withSelfRel());
+		}
+		
 		return collectionModel;
 	}
 }

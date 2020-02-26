@@ -11,7 +11,6 @@ import org.springframework.hateoas.RepresentationModel;
 import org.springframework.hateoas.UriTemplate;
 import org.springframework.hateoas.server.core.Relation;
 
-import com.algaworks.algafoodapi.api.v1.controller.FluxoPedidoController;
 import com.algaworks.algafoodapi.api.v1.controller.PedidoController;
 import com.algaworks.algafoodapi.domain.model.Pedido;
 
@@ -67,19 +66,6 @@ public class PedidoResumoModel extends RepresentationModel<PedidoResumoModel> {
 		
 		pedidoModel.add(new Link(UriTemplate.of(linkTo(PedidoController.class).toUri().toString(), 
 				TemplateVariableEnum.pageVariables().concat(TemplateVariableEnum.filtroPedidoVariables())), "pedidos"));
-		
-		if(pedido.podeConfirmar()) {
-			pedidoModel.add(linkTo(methodOn(FluxoPedidoController.class)
-					.confirmar(pedidoModel.getCodigo())).withRel("confirmar"));
-		}
-		if(pedido.podeCancelar()) {
-			pedidoModel.add(linkTo(methodOn(FluxoPedidoController.class)
-					.cancelar(pedidoModel.getCodigo())).withRel("cancelar"));
-		}
-		if(pedido.podeEntregar()) {
-			pedidoModel.add(linkTo(methodOn(FluxoPedidoController.class)
-					.entregar(pedidoModel.getCodigo())).withRel("entregar"));
-		}
 		
 		pedidoModel.setRestaurante(RestauranteApenasNomeModel.criarRestauranteApenasNomeModelComLinks(pedido.getRestaurante()));
 		pedidoModel.setCliente(UsuarioModel.criarUsuarioModelComLinks(pedido.getCliente()));

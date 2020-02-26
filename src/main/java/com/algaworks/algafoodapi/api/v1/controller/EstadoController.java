@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.algaworks.algafoodapi.api.v1.model.EstadoModel;
 import com.algaworks.algafoodapi.api.v1.model.input.EstadoInput;
 import com.algaworks.algafoodapi.api.v1.openapi.controller.EstadoControllerOpenApi;
+import com.algaworks.algafoodapi.core.security.CheckSecurity;
 import com.algaworks.algafoodapi.domain.model.Estado;
 import com.algaworks.algafoodapi.domain.repository.EstadoRepository;
 import com.algaworks.algafoodapi.domain.service.EstadoService;
@@ -36,16 +37,22 @@ public class EstadoController implements EstadoControllerOpenApi {
 		this.estadoService = estadoService;
 	}
 	
+	@CheckSecurity.Estados.PodeConsultar
+	@Override
 	@GetMapping
 	public CollectionModel<EstadoModel> listar() {
 		return EstadoModel.criarCollectorEstadoModelComLinks(estadoRepository.findAll());
 	}
 	
+	@CheckSecurity.Estados.PodeConsultar
+	@Override
 	@GetMapping("/{id}")
 	public EstadoModel buscar(@PathVariable Long id) {
 		return EstadoModel.criarEstadoModelComLinks(estadoService.buscarOuFalhar(id));
 	}
 	
+	@CheckSecurity.Estados.PodeEditar
+	@Override
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
 	public EstadoModel adicionar(@RequestBody @Valid EstadoInput estadoInput) {
@@ -54,6 +61,8 @@ public class EstadoController implements EstadoControllerOpenApi {
 		return EstadoModel.criarEstadoModelComLinks(estado);
 	}
 	
+	@CheckSecurity.Estados.PodeEditar
+	@Override
 	@PutMapping("/{id}")
 	public EstadoModel atualizar(@PathVariable Long id, @RequestBody @Valid EstadoInput estadoInput) {
 		Estado estadoAtual = estadoService.buscarOuFalhar(id);
@@ -62,6 +71,7 @@ public class EstadoController implements EstadoControllerOpenApi {
 		return EstadoModel.criarEstadoModelComLinks(estadoService.salvar(estadoAtual));
 	}
 	
+	@CheckSecurity.Estados.PodeEditar
 	@DeleteMapping("/{id}")
 	@ResponseStatus(value = HttpStatus.NO_CONTENT)
 	public void remover(@PathVariable Long id) {

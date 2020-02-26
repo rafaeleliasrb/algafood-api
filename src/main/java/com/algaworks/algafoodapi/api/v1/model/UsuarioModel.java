@@ -13,6 +13,7 @@ import org.springframework.hateoas.server.core.Relation;
 import com.algaworks.algafoodapi.api.v1.controller.RestauranteUsuarioResponsavelController;
 import com.algaworks.algafoodapi.api.v1.controller.UsuarioController;
 import com.algaworks.algafoodapi.api.v1.controller.UsuarioGrupoController;
+import com.algaworks.algafoodapi.core.security.AlgaSecurity;
 import com.algaworks.algafoodapi.domain.model.Usuario;
 
 import io.swagger.annotations.ApiModelProperty;
@@ -42,9 +43,11 @@ public class UsuarioModel extends RepresentationModel<UsuarioModel> {
 	public static UsuarioModel criarUsuarioModelComLinks(Usuario usuario) {
 		UsuarioModel usuarioModel = new UsuarioModel(usuario);
 		
-		usuarioModel.add(linkTo(methodOn(UsuarioController.class).buscar(usuarioModel.getId())).withSelfRel());
-		usuarioModel.add(linkTo(methodOn(UsuarioController.class).listar()).withRel("usuarios"));
-		usuarioModel.add(linkTo(methodOn(UsuarioGrupoController.class).listar(usuario.getId())).withRel("grupos-usuario"));
+		if(AlgaSecurity.podeConsultarUsuariosGruposPermissoes()) {
+			usuarioModel.add(linkTo(methodOn(UsuarioController.class).buscar(usuarioModel.getId())).withSelfRel());
+			usuarioModel.add(linkTo(methodOn(UsuarioController.class).listar()).withRel("usuarios"));
+			usuarioModel.add(linkTo(methodOn(UsuarioGrupoController.class).listar(usuario.getId())).withRel("grupos-usuario"));
+		}
 		
 		return usuarioModel;
 	}
@@ -53,29 +56,38 @@ public class UsuarioModel extends RepresentationModel<UsuarioModel> {
 		CollectionModel<UsuarioModel> collectionModel = new CollectionModel<>(usuarios.stream()
 				.map(UsuarioModel::criarUsuarioModelComLinks).collect(Collectors.toList()));
 		
-		collectionModel.add(linkTo(UsuarioController.class).withSelfRel());
+		if(AlgaSecurity.podeConsultarUsuariosGruposPermissoes()) {
+			collectionModel.add(linkTo(UsuarioController.class).withSelfRel());
+		}
 		
 		return collectionModel;
 	}
 	
-	public static UsuarioModel criarUsuarioModelComLinksRestaurante(Usuario responsavel, Long idRestaurante) {
+	public static UsuarioModel criarUsuarioModelComLinksRestaurante(Usuario responsavel, Long idRestaurante, AlgaSecurity algaSecurity) {
 		UsuarioModel usuarioModel = UsuarioModel.criarUsuarioModelComLinks(responsavel);
 		
-		usuarioModel.add(linkTo(methodOn(RestauranteUsuarioResponsavelController.class)
-				.remover(idRestaurante, responsavel.getId())).withRel("remover"));
+		if(algaSecurity.podeGerenciarInformacoesCadastraisDoRestaurante()) {
+			usuarioModel.add(linkTo(methodOn(RestauranteUsuarioResponsavelController.class)
+					.remover(idRestaurante, responsavel.getId())).withRel("remover"));
+		}
 		
 		return usuarioModel;
 	}
 	
 	public static CollectionModel<UsuarioModel> criarCollectionUsuarioModelComLinksRestaurante(
-			Collection<Usuario> responsaveis, Long idRestaurante) {
+			Collection<Usuario> responsaveis, Long idRestaurante, AlgaSecurity algaSecurity) {
 		CollectionModel<UsuarioModel> collectionModel = new CollectionModel<>(responsaveis.stream()
-				.map(responsavel -> criarUsuarioModelComLinksRestaurante(responsavel, idRestaurante))
+				.map(responsavel -> criarUsuarioModelComLinksRestaurante(responsavel, idRestaurante, algaSecurity))
 				.collect(Collectors.toList()));
 		
-		collectionModel.add(linkTo(methodOn(RestauranteUsuarioResponsavelController.class).listar(idRestaurante)).withSelfRel());
-		collectionModel.add(linkTo(methodOn(RestauranteUsuarioResponsavelController.class).adicionar(idRestaurante, null))
-				.withRel("adicionar"));
+		if(AlgaSecurity.podeConsultar()) {
+			collectionModel.add(linkTo(methodOn(RestauranteUsuarioResponsavelController.class).listar(idRestaurante)).withSelfRel());
+		}
+		
+		if(algaSecurity.podeGerenciarInformacoesCadastraisDoRestaurante()) {
+			collectionModel.add(linkTo(methodOn(RestauranteUsuarioResponsavelController.class).adicionar(idRestaurante, null))
+					.withRel("adicionar"));
+		}
 		
 		return collectionModel;
 	}

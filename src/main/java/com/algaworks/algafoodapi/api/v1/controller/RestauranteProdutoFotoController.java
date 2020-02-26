@@ -26,6 +26,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.algaworks.algafoodapi.api.v1.model.FotoProdutoModel;
 import com.algaworks.algafoodapi.api.v1.model.input.FotoProdutoInput;
 import com.algaworks.algafoodapi.api.v1.openapi.controller.RestauranteProdutoFotoControllerOpenApi;
+import com.algaworks.algafoodapi.core.security.CheckSecurity;
 import com.algaworks.algafoodapi.domain.exception.EntidadeNaoEncontradaException;
 import com.algaworks.algafoodapi.domain.model.FotoProduto;
 import com.algaworks.algafoodapi.domain.model.Produto;
@@ -55,6 +56,8 @@ public class RestauranteProdutoFotoController implements RestauranteProdutoFotoC
 		this.fotoStorageService = fotoStorageService;
 	}
 
+	@CheckSecurity.Restaurantes.PodeGerenciarInformacoesFuncionais
+	@Override
 	@PutMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public FotoProdutoModel atualizarFoto(@PathVariable Long idRestaurante, @PathVariable Long idProduto,
 			@Valid FotoProdutoInput fotoProdutoInput,
@@ -69,6 +72,8 @@ public class RestauranteProdutoFotoController implements RestauranteProdutoFotoC
 				idRestaurante, idProduto);
 	}
 	
+	@CheckSecurity.Restaurantes.PodeConsultar
+	@Override
 	@GetMapping
 	public FotoProdutoModel buscar(@PathVariable Long idRestaurante, @PathVariable Long idProduto) {
 		FotoProduto fotoProduto = fotoProdutoService.buscarOuFalhar(idRestaurante, idProduto);
@@ -76,6 +81,7 @@ public class RestauranteProdutoFotoController implements RestauranteProdutoFotoC
 		return FotoProdutoModel.criarFotoProdutoModelComLinksRestauranteProduto(fotoProduto, idRestaurante, idProduto);
 	}
 	
+	@Override
 	@GetMapping(produces = MediaType.ALL_VALUE)
 	public ResponseEntity<Object> servir(@PathVariable Long idRestaurante, @PathVariable Long idProduto,
 			@RequestHeader(name = "accept") String acceptheader) throws HttpMediaTypeNotAcceptableException {
@@ -103,6 +109,8 @@ public class RestauranteProdutoFotoController implements RestauranteProdutoFotoC
 		}
 	}
 	
+	@CheckSecurity.Restaurantes.PodeGerenciarInformacoesFuncionais
+	@Override
 	@DeleteMapping
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void remover(@PathVariable Long idRestaurante, @PathVariable Long idProduto) {

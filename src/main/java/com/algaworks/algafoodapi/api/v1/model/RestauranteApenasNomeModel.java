@@ -13,6 +13,7 @@ import org.springframework.hateoas.UriTemplate;
 import org.springframework.hateoas.server.core.Relation;
 
 import com.algaworks.algafoodapi.api.v1.controller.RestauranteController;
+import com.algaworks.algafoodapi.core.security.AlgaSecurity;
 import com.algaworks.algafoodapi.domain.model.Restaurante;
 
 import io.swagger.annotations.ApiModelProperty;
@@ -38,9 +39,11 @@ public class RestauranteApenasNomeModel extends RepresentationModel<RestauranteA
 	public static RestauranteApenasNomeModel criarRestauranteApenasNomeModelComLinks(Restaurante restaurante) {
 		RestauranteApenasNomeModel restauranteResumoModel = new RestauranteApenasNomeModel(restaurante);
 		
-		restauranteResumoModel.add(linkTo(methodOn(RestauranteController.class).buscar(restaurante.getId())).withSelfRel());
-		restauranteResumoModel.add(new Link(UriTemplate.of(linkTo(RestauranteController.class).toUri().toString(), 
-				TemplateVariableEnum.projecaoVariables()), "restaurantes"));
+		if(AlgaSecurity.podeConsultar()) {
+			restauranteResumoModel.add(linkTo(methodOn(RestauranteController.class).buscar(restaurante.getId())).withSelfRel());
+			restauranteResumoModel.add(new Link(UriTemplate.of(linkTo(RestauranteController.class).toUri().toString(), 
+					TemplateVariableEnum.projecaoVariables()), "restaurantes"));
+		}
 		
 		return restauranteResumoModel;
 	}
@@ -51,8 +54,10 @@ public class RestauranteApenasNomeModel extends RepresentationModel<RestauranteA
 				.map(RestauranteApenasNomeModel::criarRestauranteApenasNomeModelComLinks)
 				.collect(Collectors.toList()));
 		
-		collectionModel.add(new Link(UriTemplate.of(linkTo(RestauranteController.class).toUri().toString(), 
-				TemplateVariableEnum.projecaoVariables()), "restaurantes"));
+		if(AlgaSecurity.podeConsultar()) {
+			collectionModel.add(new Link(UriTemplate.of(linkTo(RestauranteController.class).toUri().toString(), 
+					TemplateVariableEnum.projecaoVariables()), "restaurantes"));
+		}
 		
 		return collectionModel;
 	}

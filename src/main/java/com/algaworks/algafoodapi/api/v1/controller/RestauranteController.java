@@ -33,6 +33,8 @@ import com.algaworks.algafoodapi.api.v1.model.RestauranteModel;
 import com.algaworks.algafoodapi.api.v1.model.RestauranteResumoModel;
 import com.algaworks.algafoodapi.api.v1.model.input.RestauranteInput;
 import com.algaworks.algafoodapi.api.v1.openapi.controller.RestauranteControllerOpenApi;
+import com.algaworks.algafoodapi.core.security.AlgaSecurity;
+import com.algaworks.algafoodapi.core.security.CheckSecurity;
 import com.algaworks.algafoodapi.domain.exception.NegocioException;
 import com.algaworks.algafoodapi.domain.exception.RestauranteNaoEncontradoException;
 import com.algaworks.algafoodapi.domain.exception.ValidacaoException;
@@ -52,56 +54,72 @@ public class RestauranteController implements RestauranteControllerOpenApi {
 	private final SmartValidator smartValidator;
 	private final CozinhaService cozinhaService;
 	private final CidadeService cidadeService;
+	private final AlgaSecurity algaSecurity;
 	
 	@Autowired
 	public RestauranteController(RestauranteRepository restauranteRepository, RestauranteService restauranteService, 
 			MergeadorDeRecurso mergeadorDeRecurso, SmartValidator smartValidator, 
-			CozinhaService cozinhaService, CidadeService cidadeService) {
+			CozinhaService cozinhaService, CidadeService cidadeService, AlgaSecurity algaSecurity) {
 		this.restauranteRepository = restauranteRepository;
 		this.restauranteService = restauranteService;
 		this.mergeadorDeRecurso = mergeadorDeRecurso;
 		this.smartValidator = smartValidator;
 		this.cozinhaService = cozinhaService;
 		this.cidadeService = cidadeService;
+		this.algaSecurity = algaSecurity;
 	}
 	
+	@CheckSecurity.Restaurantes.PodeConsultar
+	@Override
 	@GetMapping
 	public CollectionModel<RestauranteResumoModel> listar() {
 		return RestauranteResumoModel.criarCollectorRestauranteResumoModelComLinks(restauranteRepository.findAll());
 	}
 	
+	@CheckSecurity.Restaurantes.PodeConsultar
+	@Override
 	@GetMapping(params = "projecao=apenas-nome")
 	public CollectionModel<RestauranteApenasNomeModel> listarApenasNome() {
 		return RestauranteApenasNomeModel.criarCollectorRestauranteApenasNomeModelComLinks(restauranteRepository.findAll());
 	}
 	
+	@CheckSecurity.Restaurantes.PodeConsultar
+	@Override
 	@GetMapping(value = "/{id}")
 	public RestauranteModel buscar(@PathVariable Long id) {
-		return RestauranteModel.criarRestauranteModelComLinks(restauranteService.buscarOuFalha(id));
+		return RestauranteModel.criarRestauranteModelComLinks(restauranteService.buscarOuFalha(id), algaSecurity);
 	}
 	
+	@CheckSecurity.Restaurantes.PodeGerenciarInformacoesCadastrais
+	@Override
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
 	public RestauranteModel adicionar(@RequestBody @Valid RestauranteInput restauranteInput) {
 		Restaurante restaurante = restauranteInput.novoRestaurante(cozinhaService, cidadeService);
 		
-		return RestauranteModel.criarRestauranteModelComLinks(restauranteService.salvar(restaurante)); 
+		return RestauranteModel.criarRestauranteModelComLinks(restauranteService.salvar(restaurante), algaSecurity); 
 	}
 	
+	@CheckSecurity.Restaurantes.PodeGerenciarInformacoesCadastrais
+	@Override
 	@PutMapping(value = "{idRestaurante}")
 	public RestauranteModel atualizar(@PathVariable Long idRestaurante, @RequestBody @Valid RestauranteInput restauranteInput) {
 		Restaurante restaurante = restauranteInput
 				.restauranteAtualizado(idRestaurante, restauranteService, cozinhaService, cidadeService);
 		
-		return RestauranteModel.criarRestauranteModelComLinks(restauranteService.salvar(restaurante));
+		return RestauranteModel.criarRestauranteModelComLinks(restauranteService.salvar(restaurante), algaSecurity);
 	}
 	
+	@CheckSecurity.Restaurantes.PodeGerenciarInformacoesCadastrais
+	@Override
 	@DeleteMapping("/{id}")
 	@ResponseStatus(value = HttpStatus.NO_CONTENT)
 	public void remover(@PathVariable Long id) {
 		restauranteService.remover(id);
 	}
 	
+	@CheckSecurity.Restaurantes.PodeGerenciarInformacoesCadastrais
+	@Override
 	@PatchMapping("/{id}")
 	public RestauranteModel atualizarParcial(@PathVariable Long id, @RequestBody Map<String, Object> camposOrigem,
 			HttpServletRequest request) {
@@ -112,6 +130,8 @@ public class RestauranteController implements RestauranteControllerOpenApi {
 		return atualizar(id, restauranteAtual);
 	}
 	
+	@CheckSecurity.Restaurantes.PodeGerenciarInformacoesCadastrais
+	@Override
 	@PutMapping(value = "{idRestaurante}/ativo")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public ResponseEntity<Void> ativar(@PathVariable Long idRestaurante) {
@@ -120,6 +140,8 @@ public class RestauranteController implements RestauranteControllerOpenApi {
 		return ResponseEntity.noContent().build();
 	}
 	
+	@CheckSecurity.Restaurantes.PodeGerenciarInformacoesCadastrais
+	@Override
 	@DeleteMapping(value = "{idRestaurante}/ativo")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public ResponseEntity<Void> inativar(@PathVariable Long idRestaurante) {
@@ -128,6 +150,8 @@ public class RestauranteController implements RestauranteControllerOpenApi {
 		return ResponseEntity.noContent().build();
 	}
 	
+	@CheckSecurity.Restaurantes.PodeGerenciarInformacoesFuncionais
+	@Override
 	@PutMapping("/{idRestaurante}/abertura")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public ResponseEntity<Void> abrir(@PathVariable Long idRestaurante) {
@@ -136,6 +160,8 @@ public class RestauranteController implements RestauranteControllerOpenApi {
 		return ResponseEntity.noContent().build();
 	}
 	
+	@CheckSecurity.Restaurantes.PodeGerenciarInformacoesFuncionais
+	@Override
 	@PutMapping("/{idRestaurante}/fechamento")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public ResponseEntity<Void> fechar(@PathVariable Long idRestaurante) {
@@ -144,6 +170,8 @@ public class RestauranteController implements RestauranteControllerOpenApi {
 		return ResponseEntity.noContent().build();
 	}
 	
+	@CheckSecurity.Restaurantes.PodeGerenciarInformacoesCadastrais
+	@Override
 	@PutMapping("/ativacoes")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public ResponseEntity<Void> ativarMutiplos(@RequestBody List<Long> idsRestaurante) {
@@ -156,6 +184,8 @@ public class RestauranteController implements RestauranteControllerOpenApi {
 		}
 	}
 	
+	@CheckSecurity.Restaurantes.PodeGerenciarInformacoesCadastrais
+	@Override
 	@DeleteMapping("/ativacoes")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public ResponseEntity<Void> desativarMutiplos(@RequestBody List<Long> idsRestaurante) {
@@ -178,30 +208,41 @@ public class RestauranteController implements RestauranteControllerOpenApi {
 	}
 
 	/* Endpoints extras */
+	@CheckSecurity.Restaurantes.PodeConsultar
+	@Override
 	@GetMapping("/buscar")
 	public List<RestauranteModel> buscar(@RequestParam("nome") String nome, @RequestParam BigDecimal taxaFreteInicial, 
 			@RequestParam BigDecimal taxaFreteFinal) {
 		return restauranteRepository.buscar(nome, taxaFreteInicial, taxaFreteFinal).stream()
-				.map(RestauranteModel::criarRestauranteModelComLinks).collect(Collectors.toList());
+				.map(restaurante -> RestauranteModel.criarRestauranteModelComLinks(restaurante, algaSecurity))
+				.collect(Collectors.toList());
 	}
 	
+	@CheckSecurity.Restaurantes.PodeConsultar
+	@Override
 	@GetMapping("/buscar-com-criteria")
 	public List<RestauranteModel> buscarComCriteria(String nome, BigDecimal taxaFreteInicial, BigDecimal taxaFreteFinal) {
 		return restauranteRepository.buscarComCriteria(nome, taxaFreteInicial, taxaFreteFinal).stream()
-				.map(RestauranteModel::criarRestauranteModelComLinks).collect(Collectors.toList());
+				.map(restaurante -> RestauranteModel.criarRestauranteModelComLinks(restaurante, algaSecurity))
+				.collect(Collectors.toList());
 	}
 	
+	@CheckSecurity.Restaurantes.PodeConsultar
+	@Override
 	@GetMapping("/com-frete-gratis")
 	public List<RestauranteModel> buscarComFreteGratis(String nome) {
 		return restauranteRepository.buscarComFreteGratis(nome).stream()
-				.map(RestauranteModel::criarRestauranteModelComLinks).collect(Collectors.toList());
+				.map(restaurante -> RestauranteModel.criarRestauranteModelComLinks(restaurante, algaSecurity))
+				.collect(Collectors.toList());
 	}
 	
+	@CheckSecurity.Restaurantes.PodeConsultar
+	@Override
 	@GetMapping("/buscar-primeiro")
 	public Optional<RestauranteModel> buscarPrimeiro() {
 		Optional<Restaurante> primeiroRestaurante = restauranteRepository.buscarPrimeiro();
 		if(primeiroRestaurante.isPresent()) {
-			return Optional.of(RestauranteModel.criarRestauranteModelComLinks(primeiroRestaurante.get()));
+			return Optional.of(RestauranteModel.criarRestauranteModelComLinks(primeiroRestaurante.get(), algaSecurity));
 		}
 		return Optional.empty();
 	}

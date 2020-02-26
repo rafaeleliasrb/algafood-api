@@ -27,6 +27,8 @@ import com.algaworks.algafoodapi.api.v1.model.input.PedidoInput;
 import com.algaworks.algafoodapi.api.v1.openapi.controller.PedidoControllerOpenApi;
 import com.algaworks.algafoodapi.core.data.PageWrapper;
 import com.algaworks.algafoodapi.core.data.PageableTranslator;
+import com.algaworks.algafoodapi.core.security.AlgaSecurity;
+import com.algaworks.algafoodapi.core.security.CheckSecurity;
 import com.algaworks.algafoodapi.domain.exception.EntidadeNaoEncontradaException;
 import com.algaworks.algafoodapi.domain.exception.NegocioException;
 import com.algaworks.algafoodapi.domain.filter.PedidoFilter;
@@ -43,17 +45,21 @@ public class PedidoController implements PedidoControllerOpenApi {
 	private final PedidoService pedidoService;
 	private final PagedResourcesAssembler<Pedido> pagedResourcesAssembler;
 	private final PedidoFactory pedidoFactory;
+	private final AlgaSecurity algaSecurity;
 
 	@Autowired
 	public PedidoController(PedidoRepository pedidoRepository, PedidoService pedidoService,
 			PagedResourcesAssembler<Pedido> pagedResourcesAssembler,
-			PedidoFactory pedidoFactory) {
+			PedidoFactory pedidoFactory, AlgaSecurity algaSecurity) {
 		this.pedidoRepository = pedidoRepository;
 		this.pedidoService = pedidoService;
 		this.pagedResourcesAssembler = pagedResourcesAssembler;
 		this.pedidoFactory = pedidoFactory;
+		this.algaSecurity = algaSecurity;
 	}
 	
+	@CheckSecurity.Pedidos.PodePesquisar
+	@Override
 	@GetMapping
 	public PagedModel<PedidoResumoModel> pesquisar(PedidoFilter pedidoFilter, @PageableDefault(size = 10) Pageable pageable) {
 		pageable = traduzirPageable(pageable);
@@ -64,18 +70,22 @@ public class PedidoController implements PedidoControllerOpenApi {
 				PedidoResumoModel::criarPedidoResumoModelComLinks);
 	}
 
+	@CheckSecurity.Pedidos.PodeBuscar
+	@Override
 	@GetMapping("{codigoPedido}")
 	public PedidoModel buscar(@PathVariable String codigoPedido) {
-		return PedidoModel.criarPedidoModelComLinks(pedidoService.buscarOuFalhar(codigoPedido));
+		return PedidoModel.criarPedidoModelComLinks(pedidoService.buscarOuFalhar(codigoPedido), algaSecurity);
 	}
 	
+	@CheckSecurity.Pedidos.PodeCriar
+	@Override
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
 	public PedidoModel adicionar(@RequestBody @Valid PedidoInput pedidoInput) {
 		try {
 			Pedido pedido = pedidoFactory.novoPedido(pedidoInput);
 			
-			return PedidoModel.criarPedidoModelComLinks(pedidoService.adicionarPedido(pedido));
+			return PedidoModel.criarPedidoModelComLinks(pedidoService.adicionarPedido(pedido), algaSecurity);
 		} catch (EntidadeNaoEncontradaException e) {
 			throw new NegocioException(e.getMessage(), e);
 		}

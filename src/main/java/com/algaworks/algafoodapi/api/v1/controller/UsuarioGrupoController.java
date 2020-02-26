@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.algaworks.algafoodapi.api.v1.model.GrupoModel;
 import com.algaworks.algafoodapi.api.v1.openapi.controller.UsuarioGrupoControllerOpenApi;
+import com.algaworks.algafoodapi.core.security.CheckSecurity;
 import com.algaworks.algafoodapi.domain.model.Usuario;
 import com.algaworks.algafoodapi.domain.service.UsuarioService;
 
@@ -28,6 +29,8 @@ public class UsuarioGrupoController implements UsuarioGrupoControllerOpenApi {
 		this.usuarioService = usuarioService;
 	}
 	
+	@CheckSecurity.UsuariosGruposPermissoes.PodeConsultar
+	@Override
 	@GetMapping
 	public CollectionModel<GrupoModel> listar(@PathVariable Long idUsuario) {
 		Usuario usuario = usuarioService.buscarOuFalhar(idUsuario);
@@ -35,6 +38,8 @@ public class UsuarioGrupoController implements UsuarioGrupoControllerOpenApi {
 		return GrupoModel.criarCollectionGrupoModelComLinksUsuario(usuario.getGrupos(), idUsuario);
 	}
 	
+	@CheckSecurity.UsuariosGruposPermissoes.PodeEditar
+	@Override
 	@PutMapping("/{idGrupo}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public ResponseEntity<Void> associar(@PathVariable Long idUsuario, @PathVariable Long idGrupo) {
@@ -43,6 +48,8 @@ public class UsuarioGrupoController implements UsuarioGrupoControllerOpenApi {
 		return ResponseEntity.noContent().build();
 	}
 	
+	@CheckSecurity.UsuariosGruposPermissoes.PodeEditar
+	@Override
 	@DeleteMapping("/{idGrupo}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public ResponseEntity<Void> desassociar(@PathVariable Long idUsuario, @PathVariable Long idGrupo) {

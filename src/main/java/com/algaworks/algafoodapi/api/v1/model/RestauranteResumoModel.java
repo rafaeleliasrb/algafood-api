@@ -14,6 +14,7 @@ import org.springframework.hateoas.UriTemplate;
 import org.springframework.hateoas.server.core.Relation;
 
 import com.algaworks.algafoodapi.api.v1.controller.RestauranteController;
+import com.algaworks.algafoodapi.core.security.AlgaSecurity;
 import com.algaworks.algafoodapi.domain.model.Restaurante;
 
 import io.swagger.annotations.ApiModelProperty;
@@ -46,9 +47,11 @@ public class RestauranteResumoModel extends RepresentationModel<RestauranteResum
 	public static RestauranteResumoModel criarRestauranteResumoModelComLinks(Restaurante restaurante) {
 		RestauranteResumoModel restauranteResumoModel = new RestauranteResumoModel(restaurante);
 		
-		restauranteResumoModel.add(linkTo(methodOn(RestauranteController.class).buscar(restaurante.getId())).withSelfRel());
-		restauranteResumoModel.add(new Link(UriTemplate.of(linkTo(RestauranteController.class).toUri().toString(), 
-				TemplateVariableEnum.projecaoVariables()), "restaurantes"));
+		if(AlgaSecurity.podeConsultar()) {
+			restauranteResumoModel.add(linkTo(methodOn(RestauranteController.class).buscar(restaurante.getId())).withSelfRel());
+			restauranteResumoModel.add(new Link(UriTemplate.of(linkTo(RestauranteController.class).toUri().toString(), 
+					TemplateVariableEnum.projecaoVariables()), "restaurantes"));
+		}
 		
 		restauranteResumoModel.setCozinha(CozinhaModel.criarCozinhaModelComLinks(restaurante.getCozinha()));
 		
@@ -61,8 +64,10 @@ public class RestauranteResumoModel extends RepresentationModel<RestauranteResum
 				.map(RestauranteResumoModel::criarRestauranteResumoModelComLinks)
 				.collect(Collectors.toList()));
 		
-		collectionModel.add(new Link(UriTemplate.of(linkTo(RestauranteController.class).toUri().toString(), 
-				TemplateVariableEnum.projecaoVariables()), "restaurantes"));
+		if(AlgaSecurity.podeConsultar()) {
+			collectionModel.add(new Link(UriTemplate.of(linkTo(RestauranteController.class).toUri().toString(), 
+					TemplateVariableEnum.projecaoVariables()), "restaurantes"));
+		}
 		
 		return collectionModel;
 	}

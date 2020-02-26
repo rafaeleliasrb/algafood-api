@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.algaworks.algafoodapi.api.v1.model.PermissaoModel;
 import com.algaworks.algafoodapi.api.v1.openapi.controller.GrupoPermissaoControllerOpenApi;
+import com.algaworks.algafoodapi.core.security.CheckSecurity;
 import com.algaworks.algafoodapi.domain.model.Grupo;
 import com.algaworks.algafoodapi.domain.service.GrupoService;
 
@@ -28,6 +29,8 @@ public class GrupoPermissaoController implements GrupoPermissaoControllerOpenApi
 		this.grupoService = grupoService;
 	}
 	
+	@CheckSecurity.UsuariosGruposPermissoes.PodeConsultar
+	@Override
 	@GetMapping
 	public CollectionModel<PermissaoModel> listar(@PathVariable Long idGrupo) {
 		Grupo grupo = grupoService.buscarOuFalhar(idGrupo);
@@ -35,6 +38,8 @@ public class GrupoPermissaoController implements GrupoPermissaoControllerOpenApi
 		return PermissaoModel.criarCollectionPermissaoModelComLinksGrupo(grupo.getPermissoes(), idGrupo);
 	}
 	
+	@CheckSecurity.UsuariosGruposPermissoes.PodeEditar
+	@Override
 	@PutMapping("/{idPermissao}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public ResponseEntity<Void> atribuir(@PathVariable Long idGrupo, @PathVariable Long idPermissao) {
@@ -43,6 +48,8 @@ public class GrupoPermissaoController implements GrupoPermissaoControllerOpenApi
 		return ResponseEntity.noContent().build();
 	}
 	
+	@CheckSecurity.UsuariosGruposPermissoes.PodeEditar
+	@Override
 	@DeleteMapping("/{idPermissao}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public ResponseEntity<Void> desatribuir(@PathVariable Long idGrupo, @PathVariable Long idPermissao) {

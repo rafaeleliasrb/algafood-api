@@ -26,6 +26,7 @@ import org.springframework.web.filter.ShallowEtagHeaderFilter;
 import com.algaworks.algafoodapi.api.v1.model.FormaPagamentoModel;
 import com.algaworks.algafoodapi.api.v1.model.input.FormaPagamentoInput;
 import com.algaworks.algafoodapi.api.v1.openapi.controller.FormaPagamentoControllerOpenApi;
+import com.algaworks.algafoodapi.core.security.CheckSecurity;
 import com.algaworks.algafoodapi.domain.model.FormaPagamento;
 import com.algaworks.algafoodapi.domain.repository.FormaPagamentoRepository;
 import com.algaworks.algafoodapi.domain.service.FormaPagamentoService;
@@ -44,6 +45,8 @@ public class FormaPagamentoController implements FormaPagamentoControllerOpenApi
 		this.formaPagamentoService = formaPagamentoService;
 	}
 
+	@CheckSecurity.FormasPagamento.PodeConsultar
+	@Override
 	@GetMapping
 	public ResponseEntity<CollectionModel<FormaPagamentoModel>> listar() {
 		CollectionModel<FormaPagamentoModel> formasPagamentoModel = 
@@ -57,6 +60,8 @@ public class FormaPagamentoController implements FormaPagamentoControllerOpenApi
 				.body(formasPagamentoModel);
 	}
 	
+	@CheckSecurity.FormasPagamento.PodeConsultar
+	@Override
 	@GetMapping("/{idFormaPagamento}")
 	public ResponseEntity<FormaPagamentoModel> buscar(@PathVariable Long idFormaPagamento, ServletWebRequest request) {
 		//desabilita o shallow ETag para conseguir fazer o Deep ETag
@@ -78,6 +83,8 @@ public class FormaPagamentoController implements FormaPagamentoControllerOpenApi
 				.body(formaPagamentoModel);
 	}
 	
+	@CheckSecurity.FormasPagamento.PodeEditar
+	@Override
 	@PostMapping
 	public FormaPagamentoModel adicionar(@RequestBody @Valid FormaPagamentoInput formaPagamentoInput) {
 		FormaPagamento formaPagamento = formaPagamentoInput.novaFormaPagamento();
@@ -85,6 +92,8 @@ public class FormaPagamentoController implements FormaPagamentoControllerOpenApi
 		return FormaPagamentoModel.criarFormaPagamentoModelComLinks(formaPagamentoService.salvar(formaPagamento));
 	}
 	
+	@CheckSecurity.FormasPagamento.PodeEditar
+	@Override
 	@PutMapping("/{idFormaPagamento}")
 	public FormaPagamentoModel atualizar(@PathVariable Long idFormaPagamento, 
 			@RequestBody @Valid FormaPagamentoInput formaPagamentoInput) {
@@ -95,6 +104,8 @@ public class FormaPagamentoController implements FormaPagamentoControllerOpenApi
 		return FormaPagamentoModel.criarFormaPagamentoModelComLinks(formaPagamentoService.salvar(formaPagamento));
 	}
 	
+	@CheckSecurity.FormasPagamento.PodeEditar
+	@Override
 	@DeleteMapping("/{idFormaPagamento}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void remover(@PathVariable Long idFormaPagamento) {

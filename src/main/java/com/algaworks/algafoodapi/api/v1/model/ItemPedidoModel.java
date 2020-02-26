@@ -9,6 +9,7 @@ import org.springframework.hateoas.RepresentationModel;
 import org.springframework.hateoas.server.core.Relation;
 
 import com.algaworks.algafoodapi.api.v1.controller.RestauranteProdutoController;
+import com.algaworks.algafoodapi.core.security.AlgaSecurity;
 import com.algaworks.algafoodapi.domain.model.ItemPedido;
 
 import io.swagger.annotations.ApiModelProperty;
@@ -50,8 +51,10 @@ public class ItemPedidoModel extends RepresentationModel<ItemPedidoModel> {
 	public static ItemPedidoModel criarItemPedidoModelComLinks(ItemPedido itemPedido, Long idRestaurante) {
 		ItemPedidoModel itemPedidoModel = new ItemPedidoModel(itemPedido);
 		
-		itemPedidoModel.add(linkTo(methodOn(RestauranteProdutoController.class)
-				.buscar(idRestaurante, itemPedidoModel.getProdutoId())).withRel("produto"));
+		if(AlgaSecurity.podeConsultar()) {
+			itemPedidoModel.add(linkTo(methodOn(RestauranteProdutoController.class)
+					.buscar(idRestaurante, itemPedidoModel.getProdutoId())).withRel("produto"));
+		}
 		
 		return itemPedidoModel;
 	}

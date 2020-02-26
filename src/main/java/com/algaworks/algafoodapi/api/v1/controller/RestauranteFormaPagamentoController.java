@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.algaworks.algafoodapi.api.v1.model.FormaPagamentoModel;
 import com.algaworks.algafoodapi.api.v1.openapi.controller.RestauranteFormaPagamentoControllerOpenApi;
+import com.algaworks.algafoodapi.core.security.AlgaSecurity;
+import com.algaworks.algafoodapi.core.security.CheckSecurity;
 import com.algaworks.algafoodapi.domain.model.Restaurante;
 import com.algaworks.algafoodapi.domain.service.RestauranteService;
 
@@ -23,20 +25,26 @@ import com.algaworks.algafoodapi.domain.service.RestauranteService;
 public class RestauranteFormaPagamentoController implements RestauranteFormaPagamentoControllerOpenApi {
 
 	private final RestauranteService restauranteService;
+	private final AlgaSecurity algaSecurity;
 	
 	@Autowired
-	public RestauranteFormaPagamentoController(RestauranteService restauranteService) {
+	public RestauranteFormaPagamentoController(RestauranteService restauranteService, AlgaSecurity algaSecurity) {
 		this.restauranteService = restauranteService;
+		this.algaSecurity = algaSecurity;
 	}
 	
+	@CheckSecurity.Restaurantes.PodeConsultar
+	@Override
 	@GetMapping
 	public CollectionModel<FormaPagamentoModel> listar(@PathVariable Long idRestaurante) {
 		Restaurante restaurante = restauranteService.buscarOuFalha(idRestaurante);
 		
 		return FormaPagamentoModel.criarCollectorFormaPagamentoModelComLinkRestaurante(
-				restaurante.getFormasPagamento(), idRestaurante);
+				restaurante.getFormasPagamento(), restaurante, algaSecurity);
 	}
 
+	@CheckSecurity.Restaurantes.PodeGerenciarInformacoesFuncionais
+	@Override
 	@DeleteMapping("/{idFormaPagamento}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public ResponseEntity<Void> desassociar(@PathVariable Long idRestaurante, @PathVariable Long idFormaPagamento) {
@@ -45,6 +53,8 @@ public class RestauranteFormaPagamentoController implements RestauranteFormaPaga
 		return ResponseEntity.noContent().build();
 	}
 	
+	@CheckSecurity.Restaurantes.PodeGerenciarInformacoesFuncionais
+	@Override
 	@PutMapping("/{idFormaPagamento}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public ResponseEntity<Void> associar(@PathVariable Long idRestaurante, @PathVariable Long idFormaPagamento) {

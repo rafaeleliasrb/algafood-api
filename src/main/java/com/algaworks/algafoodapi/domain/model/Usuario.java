@@ -15,6 +15,9 @@ import javax.persistence.ManyToMany;
 
 import org.hibernate.annotations.CreationTimestamp;
 
+import com.algaworks.algafoodapi.core.security.CryptConfig;
+import com.algaworks.algafoodapi.domain.exception.NegocioException;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -47,10 +50,14 @@ public class Usuario {
 	@Deprecated
 	public Usuario() {}
 	
-	public Usuario(String nome, String email, String senha) {
+	private Usuario(String nome, String email, String senha) {
 		this.nome = nome;
 		this.email = email;
-		this.senha = senha;
+		setSenha(senha);
+	}
+	
+	public static Usuario criarUsuarioComSenhaSemHash(String nome, String email, String senha) {
+		return new Usuario(nome, email, senha);
 	}
 	
 	public boolean associarGrupo(Grupo grupo) {
@@ -59,5 +66,19 @@ public class Usuario {
 
 	public boolean desassociarGrupo(Grupo grupo) {
 		return getGrupos().remove(grupo);
+	}
+	
+	public void verificarSenhaCorreta(String senhaAVerificar) {
+		if(!CryptConfig.verificarSenhaCorreta(senhaAVerificar, this.senha)) {
+			throw new NegocioException("Senha atual informada não coincide com a senha do usuário.");
+		}
+	}
+	
+	public void atualizarSenha(String novaSenhaSemHash) {
+		setSenha(novaSenhaSemHash);
+	}
+	
+	private void setSenha(String senha) {
+		this.senha = CryptConfig.criptografar(senha);
 	}
 }

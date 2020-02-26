@@ -13,6 +13,7 @@ import org.springframework.hateoas.server.core.Relation;
 
 import com.algaworks.algafoodapi.api.v1.controller.RestauranteProdutoController;
 import com.algaworks.algafoodapi.api.v1.controller.RestauranteProdutoFotoController;
+import com.algaworks.algafoodapi.core.security.AlgaSecurity;
 import com.algaworks.algafoodapi.domain.model.Produto;
 
 import io.swagger.annotations.ApiModelProperty;
@@ -50,11 +51,14 @@ public class ProdutoModel extends RepresentationModel<ProdutoModel> {
 	public static ProdutoModel criarProdutoModelComLinksRestaurante(Produto produto, Long idRestaurante) {
 		ProdutoModel produtoModel = new ProdutoModel(produto);
 		
-		produtoModel.add(linkTo(methodOn(RestauranteProdutoController.class).buscar(idRestaurante, produto.getId()))
-				.withSelfRel());
-		produtoModel.add(linkTo(methodOn(RestauranteProdutoController.class).listar(idRestaurante, null)).withRel("produtos"));
-		produtoModel.add(linkTo(methodOn(RestauranteProdutoFotoController.class).buscar(idRestaurante, produto.getId()))
-				.withRel("foto"));
+		if(AlgaSecurity.podeConsultar()) {
+			produtoModel.add(linkTo(methodOn(RestauranteProdutoController.class).buscar(idRestaurante, produto.getId()))
+					.withSelfRel());
+			produtoModel.add(linkTo(methodOn(RestauranteProdutoController.class).listar(idRestaurante, null)).withRel("produtos"));
+			produtoModel.add(linkTo(methodOn(RestauranteProdutoFotoController.class).buscar(idRestaurante, produto.getId()))
+					.withRel("foto"));
+		
+		}
 		
 		return produtoModel;
 	}
@@ -65,8 +69,10 @@ public class ProdutoModel extends RepresentationModel<ProdutoModel> {
 				.map(produto -> criarProdutoModelComLinksRestaurante(produto, idRestaurante))
 				.collect(Collectors.toList()));
 		
-		collectionModel.add(linkTo(methodOn(RestauranteProdutoController.class).listar(idRestaurante, null))
-				.withRel("produtos"));
+		if(AlgaSecurity.podeConsultar()) {
+			collectionModel.add(linkTo(methodOn(RestauranteProdutoController.class).listar(idRestaurante, null))
+					.withRel("produtos"));
+		}
 		
 		return collectionModel;
 	}

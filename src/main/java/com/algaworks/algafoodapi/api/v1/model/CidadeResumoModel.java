@@ -6,6 +6,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 import org.springframework.hateoas.RepresentationModel;
 
 import com.algaworks.algafoodapi.api.v1.controller.CidadeController;
+import com.algaworks.algafoodapi.core.security.AlgaSecurity;
 import com.algaworks.algafoodapi.domain.model.Cidade;
 
 import io.swagger.annotations.ApiModelProperty;
@@ -34,8 +35,10 @@ public class CidadeResumoModel extends RepresentationModel<CidadeResumoModel> {
 	public static CidadeResumoModel criarCidadeResumoModelComLinks(Cidade cidade) {
 		CidadeResumoModel cidadeResumoModel = new CidadeResumoModel(cidade);
 		
-		cidadeResumoModel.add(linkTo(methodOn(CidadeController.class).buscar(cidadeResumoModel.getId())).withSelfRel());
-		cidadeResumoModel.add(linkTo(CidadeController.class).withRel("cidades"));
+		if(AlgaSecurity.podeConsultar()) {
+			cidadeResumoModel.add(linkTo(methodOn(CidadeController.class).buscar(cidadeResumoModel.getId())).withSelfRel());
+			cidadeResumoModel.add(linkTo(CidadeController.class).withRel("cidades"));
+		}
 		
 		return cidadeResumoModel;
 	}

@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.algaworks.algafoodapi.api.v1.model.UsuarioModel;
 import com.algaworks.algafoodapi.api.v1.openapi.controller.RestauranteUsuarioResponsavelControllerOpenApi;
+import com.algaworks.algafoodapi.core.security.AlgaSecurity;
+import com.algaworks.algafoodapi.core.security.CheckSecurity;
 import com.algaworks.algafoodapi.domain.model.Restaurante;
 import com.algaworks.algafoodapi.domain.service.RestauranteService;
 
@@ -22,19 +24,26 @@ import com.algaworks.algafoodapi.domain.service.RestauranteService;
 public class RestauranteUsuarioResponsavelController implements RestauranteUsuarioResponsavelControllerOpenApi {
 
 	private final RestauranteService restauranteService;
+	private final AlgaSecurity algaSecurity;
 
 	@Autowired
-	public RestauranteUsuarioResponsavelController(RestauranteService restauranteService) {
+	public RestauranteUsuarioResponsavelController(RestauranteService restauranteService, AlgaSecurity algaSecurity) {
 		this.restauranteService = restauranteService;
+		this.algaSecurity = algaSecurity;
 	}
 	
+	@CheckSecurity.Restaurantes.PodeGerenciarInformacoesCadastrais
+	@Override
 	@GetMapping
 	public CollectionModel<UsuarioModel> listar(@PathVariable Long idRestaurante) {
 		Restaurante restaurante = restauranteService.buscarOuFalha(idRestaurante);
 		
-		return UsuarioModel.criarCollectionUsuarioModelComLinksRestaurante(restaurante.getResponsaveis(), idRestaurante);
+		return UsuarioModel.criarCollectionUsuarioModelComLinksRestaurante(
+				restaurante.getResponsaveis(), idRestaurante, algaSecurity);
 	}
 	
+	@CheckSecurity.Restaurantes.PodeGerenciarInformacoesCadastrais
+	@Override
 	@PutMapping("/{idResponsavel}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public ResponseEntity<Void> adicionar(@PathVariable Long idRestaurante, @PathVariable Long idResponsavel) {
@@ -43,6 +52,8 @@ public class RestauranteUsuarioResponsavelController implements RestauranteUsuar
 		return ResponseEntity.noContent().build();
 	}
 	
+	@CheckSecurity.Restaurantes.PodeGerenciarInformacoesCadastrais
+	@Override
 	@DeleteMapping("/{idResponsavel}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public ResponseEntity<Void> remover(@PathVariable Long idRestaurante, @PathVariable Long idResponsavel) {

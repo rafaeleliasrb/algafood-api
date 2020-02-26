@@ -19,6 +19,7 @@ import com.algaworks.algafoodapi.api.v1.model.input.SenhaInput;
 import com.algaworks.algafoodapi.api.v1.model.input.UsuarioInput;
 import com.algaworks.algafoodapi.api.v1.model.input.UsuarioSemSenhaInput;
 import com.algaworks.algafoodapi.api.v1.openapi.controller.UsuarioControllerOpenApi;
+import com.algaworks.algafoodapi.core.security.CheckSecurity;
 import com.algaworks.algafoodapi.domain.model.Usuario;
 import com.algaworks.algafoodapi.domain.repository.UsuarioRepository;
 import com.algaworks.algafoodapi.domain.service.UsuarioService;
@@ -36,16 +37,21 @@ public class UsuarioController implements UsuarioControllerOpenApi {
 		this.usuarioService = usuarioService;
 	}
 	
+	@CheckSecurity.UsuariosGruposPermissoes.PodeConsultar
+	@Override
 	@GetMapping
 	public CollectionModel<UsuarioModel> listar() {
 		return UsuarioModel.criarCollectionUsuarioModelComLinks(usuarioRepository.findAll());
 	}
 	
+	@CheckSecurity.UsuariosGruposPermissoes.PodeConsultar
+	@Override
 	@GetMapping("/{idUsuario}")
 	public UsuarioModel buscar(@PathVariable Long idUsuario) {
 		return UsuarioModel.criarUsuarioModelComLinks(usuarioService.buscarOuFalhar(idUsuario));
 	}
 	
+	@Override
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
 	public UsuarioModel adicionar(@RequestBody @Valid UsuarioInput usuarioInput) {
@@ -54,6 +60,8 @@ public class UsuarioController implements UsuarioControllerOpenApi {
 		return UsuarioModel.criarUsuarioModelComLinks(usuarioService.salvar(usuario));
 	}
 	
+	@CheckSecurity.UsuariosGruposPermissoes.PodeAlterarUsuario
+	@Override
 	@PutMapping("/{idUsuario}")
 	public UsuarioModel atualizar(@PathVariable Long idUsuario, @RequestBody @Valid UsuarioSemSenhaInput usuarioSemSenhaInput) {
 		Usuario usuarioAtualizada = usuarioSemSenhaInput.usuarioAtualizado(idUsuario, usuarioService);
@@ -61,6 +69,8 @@ public class UsuarioController implements UsuarioControllerOpenApi {
 		return UsuarioModel.criarUsuarioModelComLinks(usuarioService.salvar(usuarioAtualizada));
 	}
 	
+	@CheckSecurity.UsuariosGruposPermissoes.PodeAlterarPropriaSenha
+	@Override
 	@PutMapping("/{idUsuario}/senha")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void alterarSenha(@PathVariable Long idUsuario, @RequestBody @Valid SenhaInput senhaInput) {

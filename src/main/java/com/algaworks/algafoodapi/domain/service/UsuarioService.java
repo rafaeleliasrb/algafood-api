@@ -53,9 +53,9 @@ public class UsuarioService {
 	public void alterarSenha(Long idUsuario, String senhaAtual, String novaSenha) {
 		Usuario usuario = buscarOuFalhar(idUsuario);
 		
-		vericarSenhaAtualCorreta(usuario.getSenha(), senhaAtual);
+		usuario.verificarSenhaCorreta(senhaAtual);
 		
-		usuario.setSenha(novaSenha);
+		usuario.atualizarSenha(novaSenha);
 	}
 	
 	@Transactional
@@ -78,12 +78,6 @@ public class UsuarioService {
 		Optional<Usuario> usuarioExistente = usuarioRepository.findByEmail(usuario.getEmail());
 		if(usuarioExistente.isPresent() && !usuarioExistente.get().equals(usuario)) {
 			throw new NegocioException(String.format("Já existe usuário cadastrado com esse email %s", usuario.getEmail()));
-		}
-	}
-
-	private void vericarSenhaAtualCorreta(String senha, String senhaAtual) {
-		if(!senha.equals(senhaAtual)) {
-			throw new NegocioException("Senha atual informada não coincide com a senha do usuário.");
 		}
 	}
 

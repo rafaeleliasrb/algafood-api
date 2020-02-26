@@ -10,7 +10,9 @@ import java.util.stream.Collectors;
 
 import org.springframework.hateoas.RepresentationModel;
 
+import com.algaworks.algafoodapi.api.v1.controller.FluxoPedidoController;
 import com.algaworks.algafoodapi.api.v1.controller.PedidoController;
+import com.algaworks.algafoodapi.core.security.AlgaSecurity;
 import com.algaworks.algafoodapi.domain.model.Pedido;
 
 import io.swagger.annotations.ApiModelProperty;
@@ -82,10 +84,25 @@ public class PedidoModel extends RepresentationModel<PedidoModel> {
 		this.itens = itensPedidoModel;
 	}
 	
-	public static PedidoModel criarPedidoModelComLinks(Pedido pedido) {
+	public static PedidoModel criarPedidoModelComLinks(Pedido pedido, AlgaSecurity algaSecurity) {
 		PedidoModel pedidoModel = new PedidoModel(pedido);
 		pedidoModel.add(linkTo(methodOn(PedidoController.class).buscar(pedidoModel.getCodigo())).withSelfRel());
 		pedidoModel.add(linkTo(PedidoController.class).withRel("pedidos"));
+		
+		if(algaSecurity.podeGerenciarPedidos(pedido.getCodigo())) {
+			if(pedido.podeConfirmar()) {
+				pedidoModel.add(linkTo(methodOn(FluxoPedidoController.class)
+						.confirmar(pedidoModel.getCodigo())).withRel("confirmar"));
+			}
+			if(pedido.podeCancelar()) {
+				pedidoModel.add(linkTo(methodOn(FluxoPedidoController.class)
+						.cancelar(pedidoModel.getCodigo())).withRel("cancelar"));
+			}
+			if(pedido.podeEntregar()) {
+				pedidoModel.add(linkTo(methodOn(FluxoPedidoController.class)
+						.entregar(pedidoModel.getCodigo())).withRel("entregar"));
+			}
+		}
 		
 		pedidoModel.setRestaurante(RestauranteApenasNomeModel.criarRestauranteApenasNomeModelComLinks(pedido.getRestaurante()));
 		pedidoModel.setEnderecoEntrega(EnderecoModel.criarEnderecoModelComLinks(pedido.getEnderecoEntrega()));

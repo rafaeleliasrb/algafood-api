@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.algaworks.algafoodapi.api.v1.model.input.PedidoInput;
+import com.algaworks.algafoodapi.core.security.AlgaSecurity;
 import com.algaworks.algafoodapi.domain.model.FormaPagamento;
 import com.algaworks.algafoodapi.domain.model.ItemPedido;
 import com.algaworks.algafoodapi.domain.model.Pedido;
@@ -21,11 +22,11 @@ import com.algaworks.algafoodapi.domain.service.UsuarioService;
 @Component
 public class PedidoFactory {
 
-	private RestauranteService restauranteService; 
-	private FormaPagamentoService formaPagamentoService;
-	private CidadeService cidadeService;
-	private ProdutoService produtoService;
-	private UsuarioService usuarioService;
+	private final RestauranteService restauranteService; 
+	private final FormaPagamentoService formaPagamentoService;
+	private final CidadeService cidadeService;
+	private final ProdutoService produtoService;
+	private final UsuarioService usuarioService;
 	
 	@Autowired
 	public PedidoFactory(RestauranteService restauranteService, FormaPagamentoService formaPagamentoService,
@@ -42,7 +43,7 @@ public class PedidoFactory {
 		FormaPagamento formaPagamentoExistente = 
 				formaPagamentoService.buscarOuFalhar(pedidoInput.getFormaPagamento().getId());
 		
-		Usuario cliente = usuarioService.buscarOuFalhar(1L);
+		Usuario cliente = usuarioService.buscarOuFalhar(AlgaSecurity.getUsuarioId());
 		
 		List<ItemPedido> itensPedido = pedidoInput.getItens().stream()
 				.map(itemPedidoInput -> itemPedidoInput.itemPedido(restauranteExistente, produtoService))

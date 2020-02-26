@@ -8,6 +8,7 @@ import org.springframework.hateoas.server.core.Relation;
 
 import com.algaworks.algafoodapi.api.v1.controller.RestauranteProdutoController;
 import com.algaworks.algafoodapi.api.v1.controller.RestauranteProdutoFotoController;
+import com.algaworks.algafoodapi.core.security.AlgaSecurity;
 import com.algaworks.algafoodapi.domain.model.FotoProduto;
 
 import io.swagger.annotations.ApiModelProperty;
@@ -42,10 +43,12 @@ public class FotoProdutoModel extends RepresentationModel<FotoProdutoModel> {
 			Long idRestaurante, Long idProduto) {
 		FotoProdutoModel fotoProdutoModel = new FotoProdutoModel(fotoProduto);
 		
-		fotoProdutoModel.add(linkTo(methodOn(RestauranteProdutoFotoController.class).buscar(idRestaurante, idProduto))
-				.withSelfRel());
-		fotoProdutoModel.add(linkTo(methodOn(RestauranteProdutoController.class).buscar(idRestaurante, idProduto))
-				.withRel("produto"));
+		if(AlgaSecurity.podeConsultar()) {
+			fotoProdutoModel.add(linkTo(methodOn(RestauranteProdutoFotoController.class).buscar(idRestaurante, idProduto))
+					.withSelfRel());
+			fotoProdutoModel.add(linkTo(methodOn(RestauranteProdutoController.class).buscar(idRestaurante, idProduto))
+					.withRel("produto"));
+		}
 		
 		return fotoProdutoModel;
 	}

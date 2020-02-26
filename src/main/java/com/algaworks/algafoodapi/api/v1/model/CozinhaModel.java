@@ -8,6 +8,7 @@ import org.springframework.hateoas.server.core.Relation;
 
 import com.algaworks.algafoodapi.api.v1.controller.CozinhaController;
 import com.algaworks.algafoodapi.api.v1.model.view.RestauranteView;
+import com.algaworks.algafoodapi.core.security.AlgaSecurity;
 import com.algaworks.algafoodapi.domain.model.Cozinha;
 import com.fasterxml.jackson.annotation.JsonView;
 
@@ -36,8 +37,10 @@ public class CozinhaModel extends RepresentationModel<CozinhaModel> {
 	public static CozinhaModel criarCozinhaModelComLinks(Cozinha cozinha) {
 		CozinhaModel cozinhaModel = new CozinhaModel(cozinha);
 		
-		cozinhaModel.add(linkTo(methodOn(CozinhaController.class).buscar(cozinhaModel.getId())).withSelfRel());
-		cozinhaModel.add(linkTo(CozinhaController.class).withRel("cozinhas"));
+		if(AlgaSecurity.podeConsultar()) {
+			cozinhaModel.add(linkTo(methodOn(CozinhaController.class).buscar(cozinhaModel.getId())).withSelfRel());
+			cozinhaModel.add(linkTo(CozinhaController.class).withRel("cozinhas"));
+		}
 		
 		return cozinhaModel;
 	}

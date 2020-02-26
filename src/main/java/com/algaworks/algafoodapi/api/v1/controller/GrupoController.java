@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.algaworks.algafoodapi.api.v1.model.GrupoModel;
 import com.algaworks.algafoodapi.api.v1.model.input.GrupoInput;
 import com.algaworks.algafoodapi.api.v1.openapi.controller.GrupoControllerOpenApi;
+import com.algaworks.algafoodapi.core.security.CheckSecurity;
 import com.algaworks.algafoodapi.domain.model.Grupo;
 import com.algaworks.algafoodapi.domain.repository.GrupoRepository;
 import com.algaworks.algafoodapi.domain.service.GrupoService;
@@ -36,16 +37,22 @@ public class GrupoController implements GrupoControllerOpenApi {
 		this.grupoRepository = grupoRepository;
 	}
 	
+	@CheckSecurity.UsuariosGruposPermissoes.PodeConsultar
+	@Override
 	@GetMapping
 	public CollectionModel<GrupoModel> listar() {
 		return GrupoModel.criarCollectionGrupoModelComLinks(grupoRepository.findAll());
 	}
 	
+	@CheckSecurity.UsuariosGruposPermissoes.PodeConsultar
+	@Override
 	@GetMapping("/{idGrupo}")
 	public GrupoModel buscar(@PathVariable Long idGrupo) {
 		return GrupoModel.criarGrupoModelComLinks(grupoService.buscarOuFalhar(idGrupo));
 	}
 	
+	@CheckSecurity.UsuariosGruposPermissoes.PodeEditar
+	@Override
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
 	public GrupoModel adicionar(@RequestBody @Valid GrupoInput grupoInput) {
@@ -54,6 +61,8 @@ public class GrupoController implements GrupoControllerOpenApi {
 		return GrupoModel.criarGrupoModelComLinks(grupoService.salvar(grupo));
 	}
 	
+	@CheckSecurity.UsuariosGruposPermissoes.PodeEditar
+	@Override
 	@PutMapping("/{idGrupo}")
 	public GrupoModel atualizar(@PathVariable Long idGrupo, @RequestBody @Valid GrupoInput grupoInput) {
 		Grupo grupoAtual = grupoService.buscarOuFalhar(idGrupo);
@@ -62,6 +71,8 @@ public class GrupoController implements GrupoControllerOpenApi {
 		return GrupoModel.criarGrupoModelComLinks(grupoService.salvar(grupoAtual));
 	}
 	
+	@CheckSecurity.UsuariosGruposPermissoes.PodeConsultar
+	@Override
 	@DeleteMapping("/{idGrupo}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void remover(@PathVariable Long idGrupo) {

@@ -26,6 +26,7 @@ import com.algaworks.algafoodapi.api.v1.model.CozinhaModel;
 import com.algaworks.algafoodapi.api.v1.model.CozinhaXMLWrapper;
 import com.algaworks.algafoodapi.api.v1.model.input.CozinhaInput;
 import com.algaworks.algafoodapi.api.v1.openapi.controller.CozinhaControllerOpenApi;
+import com.algaworks.algafoodapi.core.security.CheckSecurity;
 import com.algaworks.algafoodapi.domain.model.Cozinha;
 import com.algaworks.algafoodapi.domain.repository.CozinhaRepository;
 import com.algaworks.algafoodapi.domain.service.CozinhaService;
@@ -46,6 +47,8 @@ public class CozinhaController implements CozinhaControllerOpenApi {
 		this.pagedResourcesAssembler = pagedResourcesAssembler;
 	}
 	
+	@CheckSecurity.Cozinhas.PodeConsultar
+	@Override
 	@GetMapping(produces = { MediaType.APPLICATION_JSON_VALUE })
 	public PagedModel<CozinhaModel> listar(@PageableDefault(size = 10) Pageable pageable) {
 		Page<Cozinha> cozinhas = cozinhaRepository.findAll(pageable);
@@ -53,6 +56,8 @@ public class CozinhaController implements CozinhaControllerOpenApi {
 		return pagedResourcesAssembler.toModel(cozinhas, CozinhaModel::criarCozinhaModelComLinks);
 	}
 
+	@CheckSecurity.Cozinhas.PodeConsultar
+	@Override
 	@GetMapping(produces = {MediaType.APPLICATION_XML_VALUE})
 	public CozinhaXMLWrapper listarXML() {
 		return new CozinhaXMLWrapper(cozinhaRepository.findAll().stream()
@@ -60,11 +65,15 @@ public class CozinhaController implements CozinhaControllerOpenApi {
 					.collect(Collectors.toList()));
 	}
 	
+	@CheckSecurity.Cozinhas.PodeConsultar
+	@Override
 	@GetMapping(value = "/{id}")
 	public CozinhaModel buscar(@PathVariable Long id) {
 		return CozinhaModel.criarCozinhaModelComLinks(cozinhaService.buscarOuFalhar(id));
 	}
 	
+	@CheckSecurity.Cozinhas.PodeEditar
+	@Override
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
 	public CozinhaModel adicionar(@RequestBody @Valid CozinhaInput cozinhaInput) {
@@ -73,6 +82,8 @@ public class CozinhaController implements CozinhaControllerOpenApi {
 		return CozinhaModel.criarCozinhaModelComLinks(novaCozinha);
 	}
 	
+	@CheckSecurity.Cozinhas.PodeEditar
+	@Override
 	@PutMapping("/{id}")
 	public CozinhaModel atualizar(@RequestBody @Valid CozinhaInput cozinhaInput, @PathVariable Long id) {
 		Cozinha cozinhaAtual = cozinhaService.buscarOuFalhar(id);
@@ -83,6 +94,8 @@ public class CozinhaController implements CozinhaControllerOpenApi {
 		return CozinhaModel.criarCozinhaModelComLinks(cozinhaAtual);
 	}
 	
+	@CheckSecurity.Cozinhas.PodeEditar
+	@Override
 	@DeleteMapping("/{id}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void remover(@PathVariable Long id) {

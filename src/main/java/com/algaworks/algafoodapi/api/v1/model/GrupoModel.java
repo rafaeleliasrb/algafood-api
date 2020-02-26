@@ -13,6 +13,7 @@ import org.springframework.hateoas.server.core.Relation;
 import com.algaworks.algafoodapi.api.v1.controller.GrupoController;
 import com.algaworks.algafoodapi.api.v1.controller.GrupoPermissaoController;
 import com.algaworks.algafoodapi.api.v1.controller.UsuarioGrupoController;
+import com.algaworks.algafoodapi.core.security.AlgaSecurity;
 import com.algaworks.algafoodapi.domain.model.Grupo;
 
 import io.swagger.annotations.ApiModelProperty;
@@ -38,9 +39,11 @@ public class GrupoModel extends RepresentationModel<GrupoModel> {
 	public static GrupoModel criarGrupoModelComLinks(Grupo grupo) {
 		GrupoModel grupoModel = new GrupoModel(grupo);
 		
-		grupoModel.add(linkTo(methodOn(GrupoController.class).buscar(grupo.getId())).withSelfRel());
-		grupoModel.add(linkTo(methodOn(GrupoController.class).listar()).withRel("grupos"));
-		grupoModel.add(linkTo(methodOn(GrupoPermissaoController.class).listar(grupo.getId())).withRel("permissoes"));
+		if(AlgaSecurity.podeConsultarUsuariosGruposPermissoes()) {
+			grupoModel.add(linkTo(methodOn(GrupoController.class).buscar(grupo.getId())).withSelfRel());
+			grupoModel.add(linkTo(methodOn(GrupoController.class).listar()).withRel("grupos"));
+			grupoModel.add(linkTo(methodOn(GrupoPermissaoController.class).listar(grupo.getId())).withRel("permissoes"));
+		}
 		
 		return grupoModel;
 	}
@@ -49,15 +52,20 @@ public class GrupoModel extends RepresentationModel<GrupoModel> {
 		CollectionModel<GrupoModel> collectionModel = new CollectionModel<>(grupos.stream()
 				.map(GrupoModel::criarGrupoModelComLinks).collect(Collectors.toList()));
 		
-		collectionModel.add(linkTo(GrupoController.class).withSelfRel());
+		if(AlgaSecurity.podeConsultarUsuariosGruposPermissoes()) {
+			collectionModel.add(linkTo(GrupoController.class).withSelfRel());
+		}
 		
 		return collectionModel;
 	}
 	
 	public static GrupoModel criarGrupoModelComLinksUsuario(Grupo grupo, Long idUsuario) {
 		GrupoModel grupoModel = criarGrupoModelComLinks(grupo);
-		grupoModel.add(linkTo(methodOn(UsuarioGrupoController.class).desassociar(idUsuario, grupo.getId()))
-				.withRel("desassociar"));
+		
+		if(AlgaSecurity.podeConsultarUsuariosGruposPermissoes()) {
+			grupoModel.add(linkTo(methodOn(UsuarioGrupoController.class).desassociar(idUsuario, grupo.getId()))
+					.withRel("desassociar"));
+		}
 		
 		return grupoModel;
 	}
@@ -67,9 +75,11 @@ public class GrupoModel extends RepresentationModel<GrupoModel> {
 				.map(grupo -> GrupoModel.criarGrupoModelComLinksUsuario(grupo, idUsuario))
 				.collect(Collectors.toList()));
 		
-		collectionModel.add(linkTo(methodOn(UsuarioGrupoController.class).listar(idUsuario)).withRel("grupos"));
-		collectionModel.add(linkTo(methodOn(UsuarioGrupoController.class).associar(idUsuario, null))
-				.withRel("associar"));
+		if(AlgaSecurity.podeConsultarUsuariosGruposPermissoes()) {
+			collectionModel.add(linkTo(methodOn(UsuarioGrupoController.class).listar(idUsuario)).withRel("grupos"));
+			collectionModel.add(linkTo(methodOn(UsuarioGrupoController.class).associar(idUsuario, null))
+					.withRel("associar"));
+		}
 		
 		return collectionModel;
 	}

@@ -14,6 +14,7 @@ import com.algaworks.algafoodapi.api.v1.controller.RestauranteController;
 import com.algaworks.algafoodapi.api.v1.controller.RestauranteFormaPagamentoController;
 import com.algaworks.algafoodapi.api.v1.controller.RestauranteProdutoController;
 import com.algaworks.algafoodapi.api.v1.controller.RestauranteUsuarioResponsavelController;
+import com.algaworks.algafoodapi.core.security.AlgaSecurity;
 import com.algaworks.algafoodapi.domain.model.Restaurante;
 
 import io.swagger.annotations.ApiModelProperty;
@@ -54,42 +55,53 @@ public class RestauranteModel extends RepresentationModel<RestauranteModel> {
 		this.endereco = new EnderecoModel(restaurante.getEndereco());
 	}
 	
-	public static RestauranteModel criarRestauranteModelComLinks(Restaurante restaurante) {
+	public static RestauranteModel criarRestauranteModelComLinks(Restaurante restaurante, AlgaSecurity algaSecurity) {
 		RestauranteModel restauranteModel = new RestauranteModel(restaurante);
-		
-		restauranteModel.add(linkTo(methodOn(RestauranteController.class).buscar(restaurante.getId())).withSelfRel());
-		restauranteModel.add(new Link(UriTemplate.of(linkTo(RestauranteController.class).toUri().toString(), 
-				TemplateVariableEnum.projecaoVariables()), "restaurantes"));
-
-		if(restaurante.permiteAbrir()) {
-			restauranteModel.add(linkTo(methodOn(RestauranteController.class)
-					.abrir(restaurante.getId())).withRel("abrir"));
-		}
-		
-		if(restaurante.permiteFechar()) {
-			restauranteModel.add(linkTo(methodOn(RestauranteController.class)
-					.fechar(restaurante.getId())).withRel("fechar"));
-		}
-		
-		if(restaurante.permiteAtivar()) {
-			restauranteModel.add(linkTo(methodOn(RestauranteController.class)
-					.ativar(restaurante.getId())).withRel("ativar"));
-		}
-
-		if(restaurante.permiteInativar()) {
-			restauranteModel.add(linkTo(methodOn(RestauranteController.class)
-					.inativar(restaurante.getId())).withRel("inativar"));
-		}
 		
 		restauranteModel.setCozinha(CozinhaModel.criarCozinhaModelComLinks(restaurante.getCozinha()));
 		restauranteModel.setEndereco(EnderecoModel.criarEnderecoModelComLinks(restaurante.getEndereco()));
+
+		if(AlgaSecurity.podeConsultar()) {
+			restauranteModel.add(linkTo(methodOn(RestauranteController.class).buscar(restaurante.getId())).withSelfRel());
+			restauranteModel.add(new Link(UriTemplate.of(linkTo(RestauranteController.class).toUri().toString(), 
+					TemplateVariableEnum.projecaoVariables()), "restaurantes"));
+		}
+
+		if(algaSecurity.podeGerenciarInformacoesFuncionaisDoRestaurante(restaurante.getId())) {
+			if(restaurante.permiteAbrir()) {
+				restauranteModel.add(linkTo(methodOn(RestauranteController.class)
+						.abrir(restaurante.getId())).withRel("abrir"));
+			}
+			
+			if(restaurante.permiteFechar()) {
+				restauranteModel.add(linkTo(methodOn(RestauranteController.class)
+						.fechar(restaurante.getId())).withRel("fechar"));
+			}
+		}
 		
-		restauranteModel.add(linkTo(methodOn(RestauranteProdutoController.class).listar(restaurante.getId(), null))
-				.withRel("produtos"));
-		restauranteModel.add(linkTo(methodOn(RestauranteFormaPagamentoController.class).listar(restaurante.getId()))
-				.withRel("formas-pagamento"));
-		restauranteModel.add(linkTo(methodOn(RestauranteUsuarioResponsavelController.class).listar(restaurante.getId()))
-				.withRel("responsaveis"));
+		if(algaSecurity.podeGerenciarInformacoesCadastraisDoRestaurante()) {
+			if(restaurante.permiteAtivar()) {
+				restauranteModel.add(linkTo(methodOn(RestauranteController.class)
+						.ativar(restaurante.getId())).withRel("ativar"));
+			}
+	
+			if(restaurante.permiteInativar()) {
+				restauranteModel.add(linkTo(methodOn(RestauranteController.class)
+						.inativar(restaurante.getId())).withRel("inativar"));
+			}
+		}
+		
+		if(AlgaSecurity.podeConsultar()) {
+			restauranteModel.add(linkTo(methodOn(RestauranteProdutoController.class).listar(restaurante.getId(), null))
+					.withRel("produtos"));
+			restauranteModel.add(linkTo(methodOn(RestauranteFormaPagamentoController.class).listar(restaurante.getId()))
+					.withRel("formas-pagamento"));
+		}
+		
+		if(algaSecurity.podeGerenciarInformacoesCadastraisDoRestaurante()) {
+			restauranteModel.add(linkTo(methodOn(RestauranteUsuarioResponsavelController.class).listar(restaurante.getId()))
+					.withRel("responsaveis"));
+		}
 		
 		return restauranteModel;
 	}

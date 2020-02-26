@@ -12,7 +12,8 @@ public enum ProblemType {
 	ASSOCIACAO_NAO_ENCONTRADA("/associacao-nao-encontrada", "Associação não encontrada"),
 	DADOS_INVALIDOS("/dados-invalidos", "Dados inválidos"),
 	ERRO_NEGOCIO("/erro-negocio", "Violação regra de negócio"),
-	ERRO_DE_SISTEMA("/erro-de-sistema", "Erro interno do sistema");
+	ERRO_DE_SISTEMA("/erro-de-sistema", "Erro interno do sistema"),
+	ACESSO_NEGADO("/acesso-negado", "Acesso negado");
 	
 	private String title;
 	private String uri;

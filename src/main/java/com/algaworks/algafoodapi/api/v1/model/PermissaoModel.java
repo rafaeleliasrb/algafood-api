@@ -13,6 +13,7 @@ import org.springframework.hateoas.server.core.Relation;
 
 import com.algaworks.algafoodapi.api.v1.controller.GrupoPermissaoController;
 import com.algaworks.algafoodapi.api.v1.controller.PermissaoController;
+import com.algaworks.algafoodapi.core.security.AlgaSecurity;
 import com.algaworks.algafoodapi.domain.model.Permissao;
 
 import io.swagger.annotations.ApiModelProperty;
@@ -40,17 +41,24 @@ public class PermissaoModel extends RepresentationModel<PermissaoModel> {
 	}
 	
 	public static CollectionModel<PermissaoModel> criarCollectionPermissaoModelComLinks(List<Permissao> permissoes) {
-		return new CollectionModel<>(permissoes.stream()
-					.map(PermissaoModel::new).collect(Collectors.toList()))
-				.add(linkTo(PermissaoController.class).withSelfRel());
+		CollectionModel<PermissaoModel> collectionModel = new CollectionModel<>(permissoes.stream()
+					.map(PermissaoModel::new).collect(Collectors.toList()));
+		
+		if(AlgaSecurity.podeConsultarUsuariosGruposPermissoes()) {
+			collectionModel.add(linkTo(PermissaoController.class).withSelfRel());
+		}
+		
+		return collectionModel;
 	}
 	
 	public static PermissaoModel criarPermissaoModelComLinksGrupo(Permissao permissao, Long idGrupo) {
 		PermissaoModel permissaoModel = new PermissaoModel(permissao);
 		
-		permissaoModel.add(linkTo(methodOn(GrupoPermissaoController.class).listar(idGrupo)).withRel("permissoes"));
-		permissaoModel.add(linkTo(methodOn(GrupoPermissaoController.class).desatribuir(idGrupo, permissao.getId()))
-				.withRel("desatribuir"));
+		if(AlgaSecurity.podeConsultarUsuariosGruposPermissoes()) {
+			permissaoModel.add(linkTo(methodOn(GrupoPermissaoController.class).listar(idGrupo)).withRel("permissoes"));
+			permissaoModel.add(linkTo(methodOn(GrupoPermissaoController.class).desatribuir(idGrupo, permissao.getId()))
+					.withRel("desatribuir"));
+		}
 		
 		return permissaoModel;
 	}
@@ -61,9 +69,11 @@ public class PermissaoModel extends RepresentationModel<PermissaoModel> {
 				.map(permissao -> criarPermissaoModelComLinksGrupo(permissao, idGrupo))
 				.collect(Collectors.toList()));
 		
-		collectionModel.add(linkTo(methodOn(GrupoPermissaoController.class).listar(idGrupo)).withRel("permissoes"));
-		collectionModel.add(linkTo(methodOn(GrupoPermissaoController.class).atribuir(idGrupo, null))
-				.withRel("atribuir"));
+		if(AlgaSecurity.podeConsultarUsuariosGruposPermissoes()) {
+			collectionModel.add(linkTo(methodOn(GrupoPermissaoController.class).listar(idGrupo)).withRel("permissoes"));
+			collectionModel.add(linkTo(methodOn(GrupoPermissaoController.class).atribuir(idGrupo, null))
+					.withRel("atribuir"));
+		}
 		
 		return collectionModel;
 	}

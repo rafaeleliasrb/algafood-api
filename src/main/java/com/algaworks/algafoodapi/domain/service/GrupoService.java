@@ -1,10 +1,12 @@
 package com.algaworks.algafoodapi.domain.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.algaworks.algafoodapi.domain.exception.EntidadeEmUsoException;
 import com.algaworks.algafoodapi.domain.exception.GrupoNaoEncotradoException;
 import com.algaworks.algafoodapi.domain.model.Grupo;
 import com.algaworks.algafoodapi.domain.model.Permissao;
@@ -39,6 +41,9 @@ public class GrupoService {
 			grupoRepository.flush();
 		} catch (EmptyResultDataAccessException e) {
 			throw new GrupoNaoEncotradoException(id);
+		} catch (DataIntegrityViolationException e) {
+			throw new EntidadeEmUsoException(
+					String.format("O grupo de código %d não pode ser removido pois está em uso", id));
 		}
 	}
 

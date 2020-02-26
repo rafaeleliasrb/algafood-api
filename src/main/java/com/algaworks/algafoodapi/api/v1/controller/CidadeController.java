@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.algaworks.algafoodapi.api.v1.model.CidadeModel;
 import com.algaworks.algafoodapi.api.v1.model.input.CidadeInput;
 import com.algaworks.algafoodapi.api.v1.openapi.controller.CidadeControllerOpenApi;
+import com.algaworks.algafoodapi.core.security.CheckSecurity;
 import com.algaworks.algafoodapi.domain.model.Cidade;
 import com.algaworks.algafoodapi.domain.repository.CidadeRepository;
 import com.algaworks.algafoodapi.domain.service.CidadeService;
@@ -40,17 +41,23 @@ public class CidadeController implements CidadeControllerOpenApi {
 		this.estadoService = estadoService;
 	}
 	
+	@CheckSecurity.Cidades.PodeConsultar
+	@Override
 	@GetMapping
 	public CollectionModel<CidadeModel> listar() {
 		return CidadeModel.criarCollectionCidadeModelComLinks(cidadeRepository.findAll());
 	}
 	
+	@CheckSecurity.Cidades.PodeConsultar
+	@Override
 	@GetMapping("/{id}")
 	public CidadeModel buscar(@PathVariable Long id) {
 		Cidade cidade = cidadeService.buscarOuFalhar(id);
 		return CidadeModel.criarCidadeModelComLinks(cidade);
 	}
 	
+	@CheckSecurity.Cidades.PodeEditar
+	@Override
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
 	public CidadeModel adicionar(@RequestBody @Valid CidadeInput cidadeInput) {
@@ -59,6 +66,8 @@ public class CidadeController implements CidadeControllerOpenApi {
 		return CidadeModel.criarCidadeModelComLinks(cidade);
 	}
 	
+	@CheckSecurity.Cidades.PodeEditar
+	@Override
 	@PutMapping("/{idCidade}")
 	public CidadeModel atualizar(@PathVariable Long idCidade, @RequestBody @Valid CidadeInput cidadeInput) {
 		Cidade cidadeAtualizada = cidadeInput.cidadeAtualizada(idCidade, cidadeService, estadoService);
@@ -66,6 +75,8 @@ public class CidadeController implements CidadeControllerOpenApi {
 		return CidadeModel.criarCidadeModelComLinks(cidadeService.salvar(cidadeAtualizada));
 	}
 	
+	@CheckSecurity.Cidades.PodeEditar
+	@Override
 	@DeleteMapping("/{id}")
 	@ResponseStatus(value = HttpStatus.NO_CONTENT)
 	public void remover(@PathVariable Long id) {
