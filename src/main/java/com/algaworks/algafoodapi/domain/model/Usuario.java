@@ -1,8 +1,10 @@
 package com.algaworks.algafoodapi.domain.model;
 
 import java.time.OffsetDateTime;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -14,6 +16,8 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 
 import org.hibernate.annotations.CreationTimestamp;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import com.algaworks.algafoodapi.core.security.CryptConfig;
 import com.algaworks.algafoodapi.domain.exception.NegocioException;
@@ -76,6 +80,13 @@ public class Usuario {
 	
 	public void atualizarSenha(String novaSenhaSemHash) {
 		setSenha(novaSenhaSemHash);
+	}
+
+	public Collection<GrantedAuthority> getAuthorities() {
+		return grupos.stream()
+				.flatMap(grupo -> grupo.getPermissoes().stream())
+				.map(permissao -> new SimpleGrantedAuthority(permissao.getNome().toUpperCase()))
+				.collect(Collectors.toSet());
 	}
 	
 	private void setSenha(String senha) {
