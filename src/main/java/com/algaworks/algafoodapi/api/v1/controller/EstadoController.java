@@ -3,6 +3,8 @@ package com.algaworks.algafoodapi.api.v1.controller;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -38,23 +40,26 @@ public class EstadoController implements EstadoControllerOpenApi {
 	}
 	
 	@CheckSecurity.Estados.PodeConsultar
-	@Override
+	@Cacheable(value = "estados")
 	@GetMapping
+	@Override
 	public CollectionModel<EstadoModel> listar() {
 		return EstadoModel.criarCollectorEstadoModelComLinks(estadoRepository.findAll());
 	}
 	
 	@CheckSecurity.Estados.PodeConsultar
-	@Override
+	@Cacheable(value = "estado")
 	@GetMapping("/{id}")
+	@Override
 	public EstadoModel buscar(@PathVariable Long id) {
 		return EstadoModel.criarEstadoModelComLinks(estadoService.buscarOuFalhar(id));
 	}
 	
 	@CheckSecurity.Estados.PodeEditar
-	@Override
+	@CacheEvict(cacheNames = {"estados", "estado"})
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
+	@Override
 	public EstadoModel adicionar(@RequestBody @Valid EstadoInput estadoInput) {
 		Estado estado = estadoService.salvar(new Estado(estadoInput.getNome()));
 		
@@ -62,8 +67,9 @@ public class EstadoController implements EstadoControllerOpenApi {
 	}
 	
 	@CheckSecurity.Estados.PodeEditar
-	@Override
+	@CacheEvict(cacheNames = {"estados", "estado"})
 	@PutMapping("/{id}")
+	@Override
 	public EstadoModel atualizar(@PathVariable Long id, @RequestBody @Valid EstadoInput estadoInput) {
 		Estado estadoAtual = estadoService.buscarOuFalhar(id);
 		estadoAtual.setNome(estadoInput.getNome());
@@ -72,8 +78,10 @@ public class EstadoController implements EstadoControllerOpenApi {
 	}
 	
 	@CheckSecurity.Estados.PodeEditar
+	@CacheEvict(cacheNames = {"estados", "estado"})
 	@DeleteMapping("/{id}")
 	@ResponseStatus(value = HttpStatus.NO_CONTENT)
+	@Override
 	public void remover(@PathVariable Long id) {
 		estadoService.remover(id);
 	}
